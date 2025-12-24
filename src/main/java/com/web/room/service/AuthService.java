@@ -1,5 +1,6 @@
 package com.web.room.service;
 
+import com.web.room.dto.JwtResponse;
 import com.web.room.model.User;
 import com.web.room.repository.UserRepository;
 import com.web.room.security.JwtUtils;
@@ -8,6 +9,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 @Service
@@ -26,10 +29,11 @@ public class AuthService {
         User newUser = new User();
         newUser.setEmail(email);
         newUser.setPassword(encoder.encode(password));
-        newUser.setRole(role); // Frontend se aaya hua role (ROLE_USER ya ROLE_OWNER)
+        newUser.setRole(role);
         newUser.setEnabled(false);
 
         String otp = String.format("%06d", new Random().nextInt(999999));
+        System.out.println(otp);
         newUser.setOtp(otp);
         newUser.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
 
@@ -51,18 +55,21 @@ public class AuthService {
         throw new RuntimeException("Invalid or Expired OTP");
     }
 
-    public String loginUser(String email, String password) {
+    public JwtResponse loginUser(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!user.isEnabled()) {
-            throw new RuntimeException("Account not verified. Please check OTP.");
+            throw new RuntimeException("Account not verified. Please verify OTP first.");
         }
 
         if (encoder.matches(password, user.getPassword())) {
-            // Token generate karte waqt role bhej rahe hain
-            return jwtUtils.generateToken(email, user.getRole());
+            String token = jwtUtils.generateToken(email, user.getRole());
+
+            // Sab kuch JwtResponse mein pack karke return karein
+            return new JwtResponse(token, user.getRole(), user.getEmail());
+        } else {
+            throw new RuntimeException("Invalid Credentials");
         }
-        throw new RuntimeException("Invalid Credentials");
     }
 }
