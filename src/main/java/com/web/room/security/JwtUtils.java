@@ -29,7 +29,7 @@ public class JwtUtils {
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(key(), SignatureAlgorithm.HS256) // Yahan key() call ho raha hai
+                .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
     }
 

@@ -1,5 +1,6 @@
 package com.web.room.controller;
 
+import com.web.room.dto.JwtResponse;
 import com.web.room.dto.LoginRequest;
 import com.web.room.dto.OtpRequest;
 import com.web.room.service.AuthService;
@@ -37,8 +38,8 @@ public class AuthController {
     @PostMapping("/login-request")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
         try {
-            String token = authService.loginUser(req.getEmail(), req.getPassword());
-            return ResponseEntity.ok(Map.of("token", token));
+            JwtResponse response = authService.loginUser(req.getEmail(), req.getPassword());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(401).body(e.getMessage());
         }
