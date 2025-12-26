@@ -2,6 +2,7 @@ package com.web.room.repository;
 
 import com.web.room.model.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -17,4 +18,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     // Fetch only rooms that are verified and approved by Admin
     List<Room> findByIsApprovedByAdminTrue();
+
+    // Admin ke liye: Sirf un emails ki list nikalna jo owners hain
+    @Query("SELECT DISTINCT r.ownerEmail FROM Room r")
+    List<String> findDistinctOwnerEmails();
 }
