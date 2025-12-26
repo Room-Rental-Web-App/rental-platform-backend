@@ -11,6 +11,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     // Find rooms by specific pincode for location-based search
     List<Room> findByPincode(String pincode);
 
+
     // Fetch all rooms added by a specific owner
     List<Room> findByOwnerEmail(String email);
 

@@ -1,9 +1,9 @@
 package com.web.room.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,46 +18,46 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Basic Room Information
     @Column(nullable = false)
     private String title;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
     private Double price;
 
-    private String roomType; // e.g., "Single Room", "Apartment", "Studio"
-
-    // Location and Address Details
+    private String roomType;
     private String address;
     private String city;
 
     @Column(nullable = false)
     private String pincode;
 
-    // Exact Geolocation for Map Integration
     private Double latitude;
     private Double longitude;
 
-    // Media Links (Cloudinary URLs)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER) // Eager fetch zaroori hai deletion ke liye
+    @CollectionTable(name = "room_images", joinColumns = @JoinColumn(name = "room_id"))
+    @OnDelete(action = OnDeleteAction.CASCADE) // Database constraint fix
     private List<String> imageUrls;
 
     private String videoUrl;
-
-    // Contact Information (Restricted to Premium Users on Frontend)
     private String contactNumber;
 
-    // Ownership and Security
     @Column(nullable = false)
     private String ownerEmail;
 
     private boolean isAvailable = true;
-
-    // Admin Control Feature
     private boolean isApprovedByAdmin = false;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+    @ElementCollection
+    private List<String> amenities;
 }
