@@ -1,4 +1,4 @@
-package com.web.room.dto;
+package com.web.room.dto.Request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

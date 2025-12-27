@@ -1,4 +1,4 @@
-package com.web.room.dto;
+package com.web.room.dto.Response;
 
 public class SingleRoomResponse {
 }

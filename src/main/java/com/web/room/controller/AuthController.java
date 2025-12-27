@@ -1,8 +1,9 @@
 package com.web.room.controller;
 
-import com.web.room.dto.JwtResponse;
-import com.web.room.dto.LoginRequest;
-import com.web.room.dto.OtpRequest;
+import com.web.room.dto.Response.JwtResponse;
+import com.web.room.dto.Request.RegistrationRequest;
+import com.web.room.dto.Request.LoginRequest;
+import com.web.room.dto.Request.OtpRequest;
 import com.web.room.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +14,17 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired private AuthService authService;
+    @Autowired
+    private AuthService authService;
 
-    @PostMapping("/register-request")
-    public ResponseEntity<?> register(@RequestBody Map<String, String> req) {
+    /**
+     * Handles user registration with Multipart Data (Aadhar Card Image).
+     * Consumes: multipart/form-data
+     */
+    @PostMapping(value = "/register-request", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> register(@ModelAttribute RegistrationRequest req) {
         try {
-            String res = authService.registerRequest(req.get("email"), req.get("password"), req.get("role"));
+            String res = authService.registerRequest(req);
             return ResponseEntity.ok(Map.of("message", res));
         } catch (Exception e) {
             return ResponseEntity.status(400).body(e.getMessage());
