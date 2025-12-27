@@ -2,6 +2,7 @@ package com.web.room.service;
 
 import com.web.room.model.Room;
 import com.web.room.repository.RoomRepository;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,5 +106,9 @@ public class RoomService {
 
     public List<Room> getRoomsByPincode(String pincode) {
         return roomRepository.findByPincode(pincode);
+    }
+
+    public @Nullable List<Room> findRoom() {
+        return roomRepository.findAll ();
     }
 }

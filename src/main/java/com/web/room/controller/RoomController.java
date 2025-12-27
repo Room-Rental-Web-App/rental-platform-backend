@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
- import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class RoomController {
     @Autowired
     private RoomService roomService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper ();
 
     /**
      * Endpoint to register a new room listing with media.
@@ -33,25 +33,26 @@ public class RoomController {
             @RequestPart("images") List<MultipartFile> images,
             @RequestPart(value = "video", required = false) MultipartFile video
     ) {
-        System.out.println("DEBUG: Received request for Add Room");
+        System.out.println ("DEBUG: Received request for Add Room");
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectMapper objectMapper = new ObjectMapper ();
             // Important: Handle Java 8 Date/Time types
 //            objectMapper.registerModule(new JavaTimeModule());
             // Important: Don't crash if extra fields are sent from frontend
-            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            objectMapper.configure (DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-            Room room = objectMapper.readValue(roomDataJson, Room.class);
+            Room room = objectMapper.readValue (roomDataJson, Room.class);
 
-            Room savedRoom = roomService.createRoom(room, images, video);
-            return ResponseEntity.ok(savedRoom);
+            Room savedRoom = roomService.createRoom (room, images, video);
+            return ResponseEntity.ok (savedRoom);
 
         } catch (Exception e) {
-            System.err.println("CRITICAL ERROR IN CONTROLLER:");
-            e.printStackTrace(); // This prints the actual error in IntelliJ
-            return ResponseEntity.status(500).body("Server side error: " + e.getMessage());
+            System.err.println ("CRITICAL ERROR IN CONTROLLER:");
+            e.printStackTrace (); // This prints the actual error in IntelliJ
+            return ResponseEntity.status (500).body ("Server side error: " + e.getMessage ());
         }
     }
+
     /**
      * Endpoint to update room details.
      * Validates owner email to prevent unauthorized modifications.
@@ -62,10 +63,10 @@ public class RoomController {
             @RequestBody Room roomDetails,
             @RequestParam String email) {
         try {
-            Room updatedRoom = roomService.updateRoom(id, roomDetails, email);
-            return ResponseEntity.ok(updatedRoom);
+            Room updatedRoom = roomService.updateRoom (id, roomDetails, email);
+            return ResponseEntity.ok (updatedRoom);
         } catch (Exception e) {
-            return ResponseEntity.status(403).body(e.getMessage());
+            return ResponseEntity.status (403).body (e.getMessage ());
         }
     }
 
@@ -78,10 +79,10 @@ public class RoomController {
             @PathVariable Long id,
             @RequestParam String email) {
         try {
-            roomService.deleteRoom(id, email);
-            return ResponseEntity.ok(Map.of("message", "Listing and associated media deleted successfully"));
+            roomService.deleteRoom (id, email);
+            return ResponseEntity.ok (Map.of ("message", "Listing and associated media deleted successfully"));
         } catch (Exception e) {
-            return ResponseEntity.status(403).body(e.getMessage());
+            return ResponseEntity.status (403).body (e.getMessage ());
         }
     }
 
@@ -91,7 +92,7 @@ public class RoomController {
     @GetMapping("/search")
     public ResponseEntity<List<Room>> searchByPincode(@RequestParam String pincode) {
         // This line was causing the error if the method was missing in Service
-        return ResponseEntity.ok(roomService.getRoomsByPincode(pincode));
+        return ResponseEntity.ok (roomService.getRoomsByPincode (pincode));
     }
 
     /**
@@ -99,6 +100,11 @@ public class RoomController {
      */
     @GetMapping("/my-listings")
     public ResponseEntity<List<Room>> getMyListings(@RequestParam String email) {
-        return ResponseEntity.ok(roomService.getRoomsByOwner(email));
+        return ResponseEntity.ok (roomService.getRoomsByOwner (email));
+    }
+
+    @GetMapping("/findRoom")
+    public ResponseEntity<List<Room>> findRoom() {
+        return ResponseEntity.ok (roomService.findRoom ());
     }
 }
