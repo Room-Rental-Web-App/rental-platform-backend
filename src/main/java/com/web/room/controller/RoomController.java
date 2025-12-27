@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.web.room.model.Room;
 import com.web.room.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -107,4 +108,22 @@ public class RoomController {
     public ResponseEntity<List<Room>> findRoom() {
         return ResponseEntity.ok (roomService.findRoom ());
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<Page<Room>> filterRooms(
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String pincode,
+            @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    ) {
+        System.out.println (" city: " + city + " pincode" + pincode + " roomType: " + roomType + " minPrice: " + minPrice + " maxPrice: " + maxPrice + " page: " + page + " size: " + size  );
+        return ResponseEntity.ok(
+                roomService.filterRooms(city, pincode, roomType, minPrice, maxPrice, page, size)
+        );
+    }
+
+
 }
