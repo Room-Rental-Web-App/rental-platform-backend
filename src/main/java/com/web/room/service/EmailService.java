@@ -34,4 +34,19 @@ public class EmailService {
             throw new RuntimeException("Email service is currently unavailable.");
         }
     }
+        public void sendSimpleEmail(String to, String subject, String body) {
+            try {
+                SimpleMailMessage message = new SimpleMailMessage();
+                message.setFrom("your-email@gmail.com"); // Matches your application.properties
+                message.setTo(to);
+                message.setSubject(subject);
+                message.setText(body);
+
+                mailSender.send(message);
+                System.out.println("Email sent successfully to: " + to);
+            } catch (Exception e) {
+                System.err.println("Failed to send email: " + e.getMessage());
+            }
+
+    }
 }

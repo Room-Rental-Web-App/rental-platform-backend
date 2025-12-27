@@ -37,4 +37,23 @@ public class AdminController {
         adminService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully");
     }
+    // New: Get all owners with PENDING status
+    @GetMapping("/pending-owners")
+    public ResponseEntity<List<User>> getPendingOwners() {
+        return ResponseEntity.ok(adminService.getPendingOwners());
+    }
+
+    // New: Approve an owner (changes status to APPROVED)
+    @PutMapping("/approve-owner/{id}")
+    public ResponseEntity<String> approveOwner(@PathVariable Long id) {
+        adminService.updateOwnerStatus(id, "APPROVED");
+        return ResponseEntity.ok("Owner approved successfully");
+    }
+
+    // New: Reject an owner (changes status to REJECTED)
+    @PutMapping("/reject-owner/{id}")
+    public ResponseEntity<String> rejectOwner(@PathVariable Long id) {
+        adminService.updateOwnerStatus(id, "REJECTED");
+        return ResponseEntity.ok("Owner request rejected");
+    }
 }
