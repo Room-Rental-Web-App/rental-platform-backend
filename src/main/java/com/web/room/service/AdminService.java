@@ -4,6 +4,7 @@ import com.web.room.model.Room;
 import com.web.room.model.User;
 import com.web.room.repository.RoomRepository;
 import com.web.room.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,56 +18,93 @@ public class AdminService {
 
     @Autowired
     private RoomRepository roomRepository;
-    @Autowired
-    private  EmailService emailService;
 
-    // Fetch all users
+    @Autowired
+    private EmailService emailService;
+
+    // --- Existing User Methods ---
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    // Fetch all rooms
     public List<Room> getAllRooms() {
         return roomRepository.findAll();
     }
 
-    // Fetch only owners who are already APPROVED
     public List<User> getAllOwners() {
         return userRepository.findAll().stream()
                 .filter(user -> "ROLE_OWNER".equals(user.getRole()) && "APPROVED".equals(user.getStatus()))
                 .collect(Collectors.toList());
     }
 
-    // New: Fetch all Owners waiting for Approval
     public List<User> getPendingOwners() {
         return userRepository.findByStatus("PENDING");
     }
 
-    // New: Approve or Reject an Owner
     public void updateOwnerStatus(Long id, String status) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (!"ROLE_OWNER".equals(user.getRole())) {
-            throw new RuntimeException("User is not an Owner");
-        }
-
-        user.setStatus(status); // APPROVED or REJECTED
+        user.setStatus(status);
         userRepository.save(user);
-        // --- Logic to send Email Notification ---
+
         if ("APPROVED".equals(status)) {
-            String subject = "Account Approved - RentalRoom";
-            String message = "Congratulations! Your Owner account has been approved by the Admin. You can now log in and start adding your room listings.";
-            emailService.sendSimpleEmail(user.getEmail(), subject, message);
+            emailService.sendSimpleEmail(user.getEmail(), "Account Approved", "Your Owner account is approved!");
+        } else if ("REJECTED".equals(status)) {
+            emailService.sendSimpleEmail(user.getEmail(), "Account Rejected", "Your request was rejected.");
         }
-        else if ("REJECTED".equals(status)) {
-            String subject = "Account Update - RentalRoom";
-            String message = "We regret to inform you that your Owner registration request was not approved at this time. Please ensure your ID proof is clear and try again or contact support.";
-            emailService.sendSimpleEmail(user.getEmail(), subject, message);
+    }
+
+    // --- NEW: Room Approval Logic ---
+
+    /**
+     * Fetch all rooms that are waiting for Admin approval (isApprovedByAdmin = false)
+     */
+    public List<Room> getPendingRooms() {
+        return roomRepository.findByIsApprovedByAdminFalse();
+    }
+
+    /**
+     * Approve or Reject a Room listing
+     */
+    public void updateRoomApprovalStatus(Long roomId, boolean approve) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        if (approve) {
+            room.setApprovedByAdmin(true);
+            roomRepository.save(room);
+
+            // Notify Owner via Email
+            String subject = "Room Listing Approved - " + room.getTitle();
+            String body = "Good news! Your room listing '" + room.getTitle() + "' has been approved and is now live for tenants to see.";
+            emailService.sendSimpleEmail(room.getOwnerEmail(), subject, body);
+        } else {
+            // If rejected, you might want to delete it or keep it as rejected
+            // For now, let's just delete the rejected request or notify them
+            String subject = "Room Listing Update";
+            String body = "Your room listing '" + room.getTitle() + "' was not approved. Please check the details and try again.";
+            emailService.sendSimpleEmail(room.getOwnerEmail(), subject, body);
+
+            // Optional: roomRepository.delete(room);
         }
     }
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+    @Transactional
+
+    public void deleteRoomById(Long id) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        // Step 1: Manually clear the images list (This deletes rows in room_images table)
+        room.getImageUrls().clear();
+
+        // Step 2: Flush the changes to the database
+        roomRepository.saveAndFlush(room);
+
+        // Step 3: Now delete the room safely
+        roomRepository.delete(room);
     }
 }

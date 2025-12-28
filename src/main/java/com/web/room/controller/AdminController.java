@@ -8,14 +8,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:5173") // React ka port
+@CrossOrigin(origins = "http://localhost:5173")
 public class AdminController {
 
     @Autowired
     private AdminService adminService;
+
+    // --- User & Owner Management ---
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -37,23 +38,54 @@ public class AdminController {
         adminService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully");
     }
-    // New: Get all owners with PENDING status
+
     @GetMapping("/pending-owners")
     public ResponseEntity<List<User>> getPendingOwners() {
         return ResponseEntity.ok(adminService.getPendingOwners());
     }
 
-    // New: Approve an owner (changes status to APPROVED)
     @PutMapping("/approve-owner/{id}")
     public ResponseEntity<String> approveOwner(@PathVariable Long id) {
         adminService.updateOwnerStatus(id, "APPROVED");
         return ResponseEntity.ok("Owner approved successfully");
     }
 
-    // New: Reject an owner (changes status to REJECTED)
     @PutMapping("/reject-owner/{id}")
     public ResponseEntity<String> rejectOwner(@PathVariable Long id) {
         adminService.updateOwnerStatus(id, "REJECTED");
         return ResponseEntity.ok("Owner request rejected");
+    }
+
+    // --- NEW: Room Approval Management ---
+
+    /**
+     * Fetch all rooms currently waiting for admin verification.
+     */
+    @GetMapping("/pending-rooms")
+    public ResponseEntity<List<Room>> getPendingRooms() {
+        return ResponseEntity.ok(adminService.getPendingRooms());
+    }
+
+    /**
+     * Approve a room listing to make it public.
+     */
+    @PutMapping("/approve-room/{id}")
+    public ResponseEntity<String> approveRoom(@PathVariable Long id) {
+        adminService.updateRoomApprovalStatus(id, true);
+        return ResponseEntity.ok("Room listing approved and is now live!");
+    }
+
+    /**
+     * Reject a room listing.
+     */
+    @PutMapping("/reject-room/{id}")
+    public ResponseEntity<String> rejectRoom(@PathVariable Long id) {
+        adminService.updateRoomApprovalStatus(id, false);
+        return ResponseEntity.ok("Room listing has been rejected.");
+    }
+    @DeleteMapping("/rooms/{id}")
+    public ResponseEntity<String> deleteRoom(@PathVariable Long id) {
+        adminService.deleteRoomById(id); // We need to add this in AdminService
+        return ResponseEntity.ok("Room deleted successfully");
     }
 }
