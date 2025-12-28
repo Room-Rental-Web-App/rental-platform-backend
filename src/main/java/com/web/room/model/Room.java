@@ -37,7 +37,7 @@ public class Room {
     private Double latitude;
     private Double longitude;
 
-    @ElementCollection(fetch = FetchType.EAGER) // Eager fetch zaroori hai deletion ke liye
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "room_images", joinColumns = @JoinColumn(name = "room_id"))
     @OnDelete(action = OnDeleteAction.CASCADE) // Database constraint fix
     private List<String> imageUrls;
