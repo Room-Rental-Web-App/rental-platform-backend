@@ -44,5 +44,9 @@ public class WishlistService {
 
     public List<Wishlist> getUserWishlist(String email) {
         return wishlistRepo.findByUserEmail(email);
+
+    }
+    public long getWishlistCount(String email) {
+        return wishlistRepo.countByUserEmail(email);
     }
 }

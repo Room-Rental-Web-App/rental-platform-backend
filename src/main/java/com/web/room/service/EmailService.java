@@ -19,7 +19,7 @@ public class EmailService {
     public void sendOtpEmail(String to, String otp) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("chanderisilkelegant@gmail.com"); // Aapka email address
+            message.setFrom("nikhilpatel03022004@gmail.com"); // Aapka email address
             message.setTo(to);
             message.setSubject("Login OTP - Room Web App");
             message.setText("Dear User,\n\n" +
