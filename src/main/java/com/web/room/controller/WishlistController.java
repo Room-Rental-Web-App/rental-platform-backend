@@ -30,4 +30,8 @@ public class WishlistController {
     public ResponseEntity<?> myWishlist(@RequestParam String email) {
         return ResponseEntity.ok(wishlistService.getUserWishlist(email));
     }
+    @GetMapping("/count")
+    public ResponseEntity<Long> getCount(@RequestParam String email) {
+        return ResponseEntity.ok(wishlistService.getWishlistCount(email));
+    }
 }

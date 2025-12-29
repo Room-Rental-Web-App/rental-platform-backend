@@ -21,6 +21,8 @@ public class AdminService {
 
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     // --- Existing User Methods ---
     public List<User> getAllUsers() {
@@ -93,18 +95,50 @@ public class AdminService {
         userRepository.deleteById(id);
     }
     @Transactional
-
     public void deleteRoomById(Long id) {
+        // Fetch the room or throw an exception if not found
         Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+                .orElseThrow(() -> new RuntimeException("Room not found with ID: " + id));
 
-        // Step 1: Manually clear the images list (This deletes rows in room_images table)
+        // 1. Delete associated Images from Cloudinary
+        if (room.getImageUrls() != null && !room.getImageUrls().isEmpty()) {
+            for (String url : room.getImageUrls()) {
+                String publicId = extractPublicId(url);
+                if (publicId != null) {
+                    cloudinaryService.deleteFile(publicId, "image");
+                }
+            }
+        }
+
+        // 2. Delete associated Video from Cloudinary (if exists)
+        if (room.getVideoUrl() != null) {
+            String videoPublicId = extractPublicId(room.getVideoUrl());
+            if (videoPublicId != null) {
+                cloudinaryService.deleteFile(videoPublicId, "video");
+            }
+        }
+
+        // 3. Clear the ElementCollection to prevent Foreign Key Constraint errors
+        // This removes entries from the 'room_images' join table
         room.getImageUrls().clear();
-
-        // Step 2: Flush the changes to the database
         roomRepository.saveAndFlush(room);
 
-        // Step 3: Now delete the room safely
+        // 4. Permanently delete the room from the main 'rooms' table
         roomRepository.delete(room);
+    }
+
+    /**
+     * Helper method to extract the Public ID from a Cloudinary URL.
+     */
+    private String extractPublicId(String url) {
+        if (url == null || !url.contains("/upload/")) return null;
+        try {
+            // Cloudinary URLs follow the pattern: .../upload/v12345/folder/public_id.jpg
+            String part = url.split("/upload/")[1];
+            String idWithExtension = part.substring(part.indexOf("/") + 1);
+            return idWithExtension.substring(0, idWithExtension.lastIndexOf("."));
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

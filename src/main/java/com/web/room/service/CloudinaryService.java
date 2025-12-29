@@ -41,13 +41,17 @@ public class CloudinaryService {
      */
     public void deleteFile(String publicId, String resourceType) {
         try {
-            if (publicId != null) {
-                cloudinary.uploader().destroy(publicId,
+            if (publicId != null && !publicId.isEmpty()) {
+                // resourceType must be "image" or "video"
+                Map response = cloudinary.uploader().destroy(publicId,
                         ObjectUtils.asMap("resource_type", resourceType));
-                System.out.println("Resource deleted from Cloudinary: " + publicId);
+
+                // Log the actual response from Cloudinary for better debugging
+                System.out.println("Cloudinary Response for " + publicId + ": " + response.get("result"));
             }
         } catch (Exception e) {
             System.err.println("Cloudinary Deletion Failed for ID: " + publicId + " - " + e.getMessage());
+            // In a production app, you might want to throw a custom exception here
         }
     }
 }

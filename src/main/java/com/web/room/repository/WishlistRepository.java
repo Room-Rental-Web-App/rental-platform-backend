@@ -20,4 +20,5 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
     @Transactional
     @Query("DELETE FROM Wishlist w WHERE w.userEmail = :email AND w.room.id = :roomId")
     int deleteWishlist(@Param("email") String email, @Param("roomId") Long roomId);
+    long countByUserEmail(String userEmail);
 }
