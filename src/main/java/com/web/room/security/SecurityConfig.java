@@ -47,7 +47,7 @@ public class SecurityConfig {
 //                        .requestMatchers("/api/rooms/add").hasRole("OWNER") // Ensure DB has ROLE_OWNER
                         .requestMatchers("/api/admin/**").permitAll()
 
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
 
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
