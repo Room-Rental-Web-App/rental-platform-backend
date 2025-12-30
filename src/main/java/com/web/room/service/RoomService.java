@@ -145,7 +145,6 @@ public class RoomService {
 
     public Room getRoomDetails(Long roomId) {
         Optional<Room> room = roomRepository.findById (roomId);
-
         return room.orElse (null);
 
     }
