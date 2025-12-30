@@ -125,5 +125,10 @@ public class RoomController {
         );
     }
 
+    @GetMapping("/roomDetails/{roomId}")
+    public ResponseEntity<Room> getRoomDetails(@PathVariable Long roomId){
+        return ResponseEntity.ok(roomService.getRoomDetails(roomId));
+    }
+
 
 }
