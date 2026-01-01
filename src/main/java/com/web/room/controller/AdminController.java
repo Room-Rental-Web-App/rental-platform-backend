@@ -43,6 +43,11 @@ public class AdminController {
     public ResponseEntity<List<User>> getPendingOwners() {
         return ResponseEntity.ok(adminService.getPendingOwners());
     }
+    @GetMapping("/pending-users")
+    public ResponseEntity<List<User>> getPendingUsers() {
+        return ResponseEntity.ok(adminService.getPendingUsers());
+    }
+
 
     @PutMapping("/approve-owner/{id}")
     public ResponseEntity<String> approveOwner(@PathVariable Long id) {
