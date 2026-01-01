@@ -40,7 +40,11 @@ public class AdminService {
     }
 
     public List<User> getPendingOwners() {
-        return userRepository.findByStatus("PENDING");
+        return userRepository.findByRoleAndStatus("ROLE_OWNER", "PENDING");
+    }
+
+    public List<User> getPendingUsers() {
+        return userRepository.findByRoleAndStatus("ROLE_USER", "PENDING");
     }
 
     public void updateOwnerStatus(Long id, String status) {

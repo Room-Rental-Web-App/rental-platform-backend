@@ -19,7 +19,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private String role; // ROLE_USER, ROLE_OWNER, ROLE_ADMIN
+        private String role; // ROLE_USER, ROLE_OWNER, ROLE_ADMIN
     private String phone; // New field
     private String aadharUrl; // Path to stored Aadhar image
     private String status; // PENDING, APPROVED, REJECTED (New field)
