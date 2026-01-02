@@ -29,11 +29,10 @@ public class AuthService {
     @Autowired
     private JwtUtils jwtUtils;
     @Autowired
-    private Cloudinary cloudinary; // Cloudinary Config yahan inject ho gayi
+    private Cloudinary cloudinary;
 
     @Transactional
     public String registerRequest(RegistrationRequest req) {
-        System.out.println (req.toString ());
         if (userRepository.findByEmail (req.getEmail ()).isPresent ()) {
             throw new RuntimeException ("User already exists!");
         }

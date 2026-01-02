@@ -5,22 +5,28 @@ import com.web.room.dto.Request.RegistrationRequest;
 import com.web.room.dto.Request.LoginRequest;
 import com.web.room.dto.Request.OtpRequest;
 import com.web.room.service.AuthService;
+import com.web.room.service.GoogleAuthService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
-
+    private final AuthService authService;
+    private final GoogleAuthService googleAuthService;
     /**
      * Handles user registration with Multipart Data (Aadhar Card Image).
      * Consumes: multipart/form-data
      */
+
     @PostMapping(value = "/register-request", consumes = {"multipart/form-data"})
     public ResponseEntity<?> register(@ModelAttribute RegistrationRequest req) {
         try {
@@ -29,6 +35,16 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(400).body(e.getMessage());
         }
+    }
+
+    @PostMapping("/google-login")
+    public JwtResponse googleLogin(@RequestBody Map<String,String> body) throws GeneralSecurityException, IOException {
+        return googleAuthService.loginWithGoogle(body.get("token"));
+    }
+
+    @PostMapping(value = "/google/complete-registration",consumes = {"multipart/form-data"})
+    public JwtResponse completeRegistrationAndLogin(@ModelAttribute RegistrationRequest req) {
+        return googleAuthService.completeRegistrationAndLogin(req);
     }
 
     @PostMapping("/verify-otp")
