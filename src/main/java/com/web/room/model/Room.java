@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -56,8 +57,12 @@ public class Room {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now ();
     }
+
     @ElementCollection
     private List<String> amenities;
+
+    private String availableFor; // family, couples, solo, group, girls, boys, etc.
+    private Long area; // in square feet
 }
