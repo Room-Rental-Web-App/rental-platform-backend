@@ -119,7 +119,7 @@ public class RoomController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size
     ) {
-        System.out.println (" city: " + city + " pincode" + pincode + " roomType: " + roomType + " minPrice: " + minPrice + " maxPrice: " + maxPrice + " page: " + page + " size: " + size  );
+
         return ResponseEntity.ok(
                 roomService.filterRooms(city, pincode, roomType, minPrice, maxPrice, page, size)
         );
