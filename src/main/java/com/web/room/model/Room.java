@@ -65,4 +65,7 @@ public class Room {
 
     private String availableFor; // family, couples, solo, group, girls, boys, etc.
     private Long area; // in square feet
+
+    private boolean isFeatured;
+    private Integer priorityScore;
 }

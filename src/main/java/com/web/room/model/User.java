@@ -2,7 +2,9 @@ package com.web.room.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users")
 @Data
@@ -24,4 +26,5 @@ public class User {
     private String otp;
     private LocalDateTime otpExpiry;
     private boolean enabled = false;
+    private boolean isVerifiedUser;
 }

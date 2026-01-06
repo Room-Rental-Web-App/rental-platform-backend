@@ -116,12 +116,22 @@ public class RoomController {
             @RequestParam(required = false) String roomType,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
+
+
+            @RequestParam(required = false) Double userLat,
+            @RequestParam(required = false) Double userLng,
+            @RequestParam(required = false, defaultValue = "2") Double radiusKm,
+
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size
     ) {
+        System.out.println ();
+        System.out.println (" city: " + city + " pincode: " + pincode + " roomType: " + roomType + " minPrice: " + minPrice + " maxPrice: " + maxPrice + " userLat: " + userLat + " userLng: " + userLng + " radiusKm: " + radiusKm + " page: " + page + " size: " + size);
 
+        System.out.println ();
         return ResponseEntity.ok(
-                roomService.filterRooms(city, pincode, roomType, minPrice, maxPrice, page, size)
+                roomService.filterRooms(city, pincode, roomType, minPrice, maxPrice,
+                        userLat, userLng, radiusKm, page, size)
         );
     }
 
