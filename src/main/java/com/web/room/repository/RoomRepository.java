@@ -44,47 +44,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                            Double maxPrice,
                            Pageable pageable);
 
-
     @Query("""
-            SELECT r FROM Room r
-            WHERE r.isApprovedByAdmin = true
-              AND r.isAvailable = true
-              AND (:city IS NULL OR LOWER(r.city) = LOWER(:city))
-              AND (:pincode IS NULL OR r.pincode = :pincode)
-              AND (:roomType IS NULL OR r.roomType = :roomType)
-              AND (:minPrice IS NULL OR r.price >= :minPrice)
-              AND (:maxPrice IS NULL OR r.price <= :maxPrice)
-            
-              AND (
-                :userLat IS NULL OR
-                (
-                  r.latitude BETWEEN :minLat AND :maxLat
-                  AND r.longitude BETWEEN :minLng AND :maxLng
-                  AND (
-                   (6371 * 2 * ASIN(SQRT(
-                      POWER(SIN(RADIANS(r.latitude - :userLat)/2),2)
-                    + COS(RADIANS(:userLat))*COS(RADIANS(r.latitude))
-                    * POWER(SIN(RADIANS(r.longitude - :userLng)/2),2)
-                   ))) <= :radiusKm + 0.01
-                )
-                )
-              )
-            ORDER BY r.priorityScore DESC, r.createdAt DESC
-            """)
-    Page<Room> filterRoomsWithRadius(
-            String city,
-            String pincode,
-            String roomType,
-            Double minPrice,
-            Double maxPrice,
-            Double userLat,
-            Double userLng,
-            Double radiusKm,
-            Double minLat,
-            Double maxLat,
-            Double minLng,
-            Double maxLng,
-            Pageable pageable);
+            SELECT r FROM Room r WHERE r.isApprovedByAdmin = true AND r.isAvailable = true AND r.latitude IS NOT NULL AND r.longitude IS NOT NULL AND (:city IS NULL OR LOWER(r.city) = LOWER(:city)) AND (:pincode IS NULL OR r.pincode = :pincode) AND (:roomType IS NULL OR r.roomType = :roomType) AND (:minPrice IS NULL OR r.price >= :minPrice) AND (:maxPrice IS NULL OR r.price <= :maxPrice) AND ( :userLat IS NULL OR (6371 * 2 * ASIN(SQRT( POWER(SIN(RADIANS(r.latitude - :userLat) / 2), 2) + COS(RADIANS(:userLat)) * COS(RADIANS(r.latitude)) * POWER(SIN(RADIANS(r.longitude - :userLng) / 2), 2) ))) <= :radiusKm ) ORDER BY r.priorityScore DESC, r.createdAt DESC """)
+    Page<Room> filterRoomsWithRadius(String city, String pincode, String roomType, Double minPrice, Double maxPrice, Double userLat, Double userLng, Double radiusKm, Pageable pageable);
 
 
 }

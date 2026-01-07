@@ -3,18 +3,17 @@ package com.web.room.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import com.web.room.dto.Request.RegistrationRequest;
 import com.web.room.dto.Response.JwtResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.web.room.model.User;
 import com.web.room.repository.UserRepository;
 import com.web.room.security.JwtUtils;
@@ -87,7 +86,7 @@ public class GoogleAuthService {
                 response.setToken (jwtUtils.generateToken (user.getEmail (), user.getRole ()));
                 response.setRole (user.getRole ());
                 response.setEmail (req.getEmail ());
-                return  response;
+                return response;
             } catch (IOException e) {
                 throw new RuntimeException ("Image upload failed: " + e.getMessage ());
             }
