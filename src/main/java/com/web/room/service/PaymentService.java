@@ -28,9 +28,28 @@ public class PaymentService {
 
     private final SubscriptionRepository subscriptionRepo;
 
+    private static final Map<Integer, Integer> OWNER_PLANS = Map.of(
+            199, 7,     // Trial
+            499, 30,    // 1 Month
+            2499, 180,  // 6 Months
+            4499, 365   // 1 Year
+    );
+
+    private static final Map<Integer, Integer> USER_PLANS = Map.of(
+            99, 30,
+            499, 180,
+            899, 365
+    );
+
+
 
     public ResponseEntity<?> createOrder(Map<String, String> request) {
         double amountToPay = Double.parseDouble (request.get ("amountToPay"));
+
+        String email = request.get ("email");
+        String role  = request.get ("role");
+
+
         String currency = request.get ("currency");
         System.out.println ("Creating Razorpay order for amount: " + amountToPay + " and currency: " + currency
         );
@@ -70,26 +89,31 @@ public class PaymentService {
             String email = req.get("email");
             String role  = req.get("role");
             int amount   = Integer.parseInt(req.get("amountToPay"));
+            LocalDateTime base;
+
+            Subscription old = subscriptionRepo
+                    .findByEmailAndRoleAndActiveTrueAndEndDateAfter(email, role, LocalDateTime.now())
+                    .orElse(null);
+
+            base = (old != null && old.getEndDate().isAfter(LocalDateTime.now()))
+                    ? old.getEndDate()
+                    : LocalDateTime.now();
+
+            Integer days = role.equals("ROLE_OWNER")
+                    ? OWNER_PLANS.get(amount)
+                    : USER_PLANS.get(amount);
+
+            if (days == null) {
+                return ResponseEntity.badRequest().body("Invalid plan amount");
+            }
 
             Subscription s = new Subscription();
             s.setEmail(email);
             s.setRole(role);
-            s.setStartDate(LocalDateTime.now());
+            s.setPlanCode(role + "_" + days + "D");
+            s.setStartDate(base);
+            s.setEndDate(base.plusDays(days));
             s.setActive(true);
-
-            if(role.equals("ROLE_USER") && amount == 99) {
-                s.setPlanCode("USER_BASIC");
-                s.setEndDate(LocalDateTime.now().plusDays(30));
-            }
-            else if(role.equals("ROLE_OWNER") && amount == 199) {
-                s.setPlanCode("OWNER_TRIAL");
-                s.setEndDate(LocalDateTime.now().plusDays(7));
-            }
-            else if(role.equals("ROLE_OWNER") && amount == 599) {
-                s.setPlanCode("OWNER_FEATURED");
-                s.setEndDate(LocalDateTime.now().plusDays(30));
-            }
-
             subscriptionRepo.save(s);
             return ResponseEntity.ok("Subscription Activated");
 
