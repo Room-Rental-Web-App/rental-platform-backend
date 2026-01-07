@@ -135,33 +135,7 @@ public class RoomService {
     }
 
 
-    public Page<Room> filterRooms(String city, String pincode, String roomType,
-                                  Double minPrice, Double maxPrice,
-                                  Double userLat, Double userLng, Double radiusKm,
-                                  int page, int size) {
-
-        Pageable pageable = PageRequest.of(
-                page, size,
-                Sort.by(Sort.Order.desc("priorityScore"), Sort.Order.desc("createdAt"))
-        );
-
-        double earthRadius = 6371;
-
-        double latDelta = Math.toDegrees(radiusKm / earthRadius);
-        double lngDelta = Math.toDegrees(radiusKm / earthRadius / Math.cos(Math.toRadians(userLat)));
-
-        double minLat = userLat - latDelta;
-        double maxLat = userLat + latDelta;
-        double minLng = userLng - lngDelta;
-        double maxLng = userLng + lngDelta;
-
-
-
-        return roomRepository.filterRoomsWithRadius(
-                city, pincode, roomType, minPrice, maxPrice,
-                userLat, userLng, radiusKm, minLat, maxLat, minLng, maxLng, pageable
-        );
-    }
+    public Page<Room> filterRooms(String city, String pincode, String roomType, Double minPrice, Double maxPrice, Double userLat, Double userLng, Double radiusKm, int page, int size) { Pageable pageable = PageRequest.of( page, size, Sort.by(Sort.Order.desc("priorityScore"), Sort.Order.desc("createdAt")) ); return roomRepository.filterRoomsWithRadius( city, pincode, roomType, minPrice, maxPrice, userLat, userLng, radiusKm, pageable ); }
 
 
     public Room getRoomDetails(Long roomId) {
