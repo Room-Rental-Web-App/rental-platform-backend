@@ -15,7 +15,11 @@ public class JwtUtils {
     private String jwtSecret;
 
     @Value("${app.jwt.expirationMs}")
-    private int jwtExpirationMs;
+    private Long jwtExpirationMs;
+
+    @Value("${app.jwt.refreshExpirationMs}")
+    private Long refreshExpirationMs;
+
 
     // 1. Ye raha wo method jo missing hai
     private Key key() {

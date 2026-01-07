@@ -21,23 +21,23 @@ import java.security.Principal;
 import java.util.Map;
 
 
-
 @RestController
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
 public class PaymentController {
 
 
-   private  final PaymentService paymentService;
+    private final PaymentService paymentService;
+
     @PostMapping("/create-order")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, String> request) {
-       return paymentService.createOrder(request);
+        return paymentService.createOrder (request);
     }
 
     @PostMapping("/verify")
     public ResponseEntity<?> verifyPayment(@RequestBody Map<String, String> request) {
 
-  return paymentService.varifyPayment(request);
+        return paymentService.varifyPayment (request);
     }
 
 }
