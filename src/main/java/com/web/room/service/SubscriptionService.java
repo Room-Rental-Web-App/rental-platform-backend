@@ -19,7 +19,7 @@ public class SubscriptionService {
     }
 
     public ResponseEntity<?> isPremium(String email, String role) {
-       boolean isPremium = repo.findByEmailAndRoleAndActiveTrueAndEndDateAfter(
+       boolean isPremium = repo.findTopByEmailAndRoleAndActiveTrueAndEndDateAfterOrderByEndDateDesc(
                 email, role, LocalDateTime.now()
         ).isPresent();
        return ResponseEntity.ok(Map.of("isPremium", isPremium));
