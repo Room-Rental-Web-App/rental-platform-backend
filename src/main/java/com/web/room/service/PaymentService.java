@@ -92,7 +92,7 @@ public class PaymentService {
             LocalDateTime base;
 
             Subscription old = subscriptionRepo
-                    .findByEmailAndRoleAndActiveTrueAndEndDateAfter(email, role, LocalDateTime.now())
+                    .findTopByEmailAndRoleAndActiveTrueAndEndDateAfterOrderByEndDateDesc(email, role, LocalDateTime.now())
                     .orElse(null);
 
             base = (old != null && old.getEndDate().isAfter(LocalDateTime.now()))
