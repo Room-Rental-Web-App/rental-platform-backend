@@ -14,7 +14,5 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
             String role,
             LocalDateTime now
     );
-
-
     List<Subscription> findAllByEmail(String email);
 }
