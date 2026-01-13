@@ -41,7 +41,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/rooms/findRoom").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
-
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Pre-flight allow karein
                         .requestMatchers("/api/rooms/add").permitAll() // Temporary test ke liye
 //                        .requestMatchers("/api/rooms/add").hasRole("OWNER") // Ensure DB has ROLE_OWNER
