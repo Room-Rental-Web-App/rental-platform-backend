@@ -21,4 +21,8 @@ public class UserService {
         return userRepo.findByEmail(room.getOwnerEmail())
                 .orElseThrow(() -> new RuntimeException("Owner not found"));
     }
+
+    public int getRoomCount(String ownerEmail) {
+        return roomRepo.countByOwnerEmail(ownerEmail);
+    }
 }

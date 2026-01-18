@@ -139,6 +139,9 @@ public class RoomController {
     public ResponseEntity<Room> getRoomDetails(@PathVariable Long roomId){
         return ResponseEntity.ok(roomService.getRoomDetails(roomId));
     }
-
+    @GetMapping("/roomCount/{ownerEmail}")
+    public int getRoomCount(@PathVariable String ownerEmail) {
+        return roomService.getRoomCount(ownerEmail);
+    }
 
 }

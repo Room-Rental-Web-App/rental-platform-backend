@@ -19,4 +19,5 @@ public class UserController {
     public User getRoomOwner(@PathVariable Long roomId, @PathVariable String userEmail) {
         return service.getRoomOwner(roomId, userEmail);
     }
+
 }
