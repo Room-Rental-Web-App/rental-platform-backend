@@ -8,14 +8,15 @@ import com.web.room.model.User;
 import com.web.room.repository.UserRepository;
 import com.web.room.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -45,7 +46,6 @@ public class AuthService {
         newUser.setEnabled (false);
 
 
-
         // --- Logic for Cloudinary & Status ---
         newUser.setStatus ("PENDING"); // Owner approval ke liye rukega
         if (req.getAadharCard () != null && !req.getAadharCard ().isEmpty ()) {
@@ -72,7 +72,14 @@ public class AuthService {
         newUser.setOtpExpiry (LocalDateTime.now ().plusMinutes (5));
 
         userRepository.save (newUser);
-        emailService.sendOtpEmail (req.getEmail (), otp);
+        String subject = "Login OTP - Room Web App";
+
+        String body = "Dear User,\n\n" +
+                "Your OTP for logging into Room Web App is: " + otp + "\n" +
+                "This OTP is valid for 5 minutes only.\n\n" +
+                "If you didn't request this, please ignore this email.";
+
+        emailService.sendOtpEmail (req.getEmail (), subject, body);
         return "OTP_SENT";
     }
 
@@ -114,4 +121,106 @@ public class AuthService {
             throw new RuntimeException ("Invalid Credentials");
         }
     }
+
+    public ResponseEntity<?> forgotPasswordOtp(String email) {
+        Optional<User> optionalUser = userRepository.findByEmail (email);
+
+        if (optionalUser.isEmpty ()) {
+            return ResponseEntity.badRequest ().body ("Email not registered");
+        }
+
+        User user = optionalUser.get ();
+
+        // Generate OTP
+        String otp = String.format ("%06d", new Random ().nextInt (999999));
+
+        user.setOtp (otp);
+        user.setOtpExpiry (LocalDateTime.now ().plusMinutes (5));
+
+        userRepository.save (user);
+
+        // Prepare email content
+        String subject = "Password Reset OTP - Room Web App";
+
+        String body = "Dear User,\n\n" +
+                "Your OTP for resetting password is: " + otp + "\n" +
+                "This OTP is valid for 5 minutes only.\n\n" +
+                "If you didn't request this, please ignore this email.";
+
+        // Send email using generic service
+        emailService.sendOtpEmail (email, subject, body);
+        return ResponseEntity.ok ("OTP_SENT");
+    }
+
+
+    public ResponseEntity<?> forgotVerifyOtp(String email, String otp) {
+
+        Optional<User> optionalUser = userRepository.findByEmail (email);
+
+        if (optionalUser.isEmpty ()) {
+            return ResponseEntity.badRequest ().body ("Email not found");
+        }
+
+        User user = optionalUser.get ();
+
+        // Check OTP match
+        if (user.getOtp () == null || !user.getOtp ().equals (otp)) {
+            return ResponseEntity.badRequest ().body ("Invalid OTP");
+        }
+
+        // Check expiry
+        if (user.getOtpExpiry () == null || user.getOtpExpiry ().isBefore (LocalDateTime.now ())) {
+            return ResponseEntity.badRequest ().body ("OTP Expired");
+        }
+
+        // OTP verified successfully
+        user.setOtp (null);
+        user.setOtpExpiry (null);
+
+        userRepository.save (user);
+
+        return ResponseEntity.ok ("OTP_VERIFIED");
+    }
+
+    public ResponseEntity<?> forgotPassword(String email, String password) {
+
+        Optional<User> optionalUser = userRepository.findByEmail (email);
+
+        if (optionalUser.isEmpty ()) {
+            return ResponseEntity.badRequest ().body ("Email not found");
+        }
+
+        User user = optionalUser.get ();
+
+        // Security check - ensure OTP process was completed
+        if (user.getOtp () != null) {
+            return ResponseEntity.badRequest ().body ("OTP verification pending");
+        }
+
+        // Encrypt password before saving
+        user.setPassword (encoder.encode (password));
+        userRepository.save (user);
+        return ResponseEntity.ok ("Password reset successful");
+    }
+
+    public ResponseEntity<?> resetPassword(String email, String oldPassword, String newPassword) {
+
+        System.out.println (email + " " + oldPassword + " " + newPassword);
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        System.out.println (optionalUser);
+        if (optionalUser.isEmpty()) return ResponseEntity.badRequest().body("User not found");
+
+        User user = optionalUser.get();
+
+        // Validate old password
+        if (!encoder.matches(oldPassword, user.getPassword())) return ResponseEntity.badRequest().body("Old password is incorrect");
+
+        // Set new password
+        user.setPassword(encoder.encode(newPassword));
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Password updated successfully");
+    }
+
 }

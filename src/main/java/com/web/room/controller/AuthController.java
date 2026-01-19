@@ -1,5 +1,9 @@
 package com.web.room.controller;
 
+import com.web.room.dto.PasswordEmail.ChangePasswordRequest;
+import com.web.room.dto.PasswordEmail.EmailRequest;
+import com.web.room.dto.PasswordEmail.OtpVerifyRequest;
+import com.web.room.dto.PasswordEmail.ResetPasswordRequest;
 import com.web.room.dto.Response.JwtResponse;
 import com.web.room.dto.Request.RegistrationRequest;
 import com.web.room.dto.Request.LoginRequest;
@@ -7,7 +11,6 @@ import com.web.room.dto.Request.OtpRequest;
 import com.web.room.service.AuthService;
 import com.web.room.service.GoogleAuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,4 +69,29 @@ public class AuthController {
             return ResponseEntity.status(401).body(e.getMessage());
         }
     }
+    @PostMapping("/forgot-password-otp")
+    public ResponseEntity<?> forgotPasswordOtp(@RequestBody EmailRequest request){
+        return authService.forgotPasswordOtp(request.getEmail());
+    }
+
+    @PostMapping("/forgot-verify-otp")
+    public ResponseEntity<?> forgotVerifyOtp(@RequestBody OtpVerifyRequest request){
+        return authService.forgotVerifyOtp(request.getEmail(), request.getOtp());
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ResetPasswordRequest request){
+        return authService.forgotPassword(request.getEmail(), request.getPassword());
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ChangePasswordRequest request){
+        return authService.resetPassword(
+                request.getEmail(),
+                request.getOldPassword(),
+                request.getNewPassword()
+        );
+    }
+
+
 }
