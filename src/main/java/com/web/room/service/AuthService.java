@@ -116,7 +116,7 @@ public class AuthService {
 
         if (encoder.matches (password, user.getPassword ())) {
             String token = jwtUtils.generateToken (email, user.getRole ());
-            return new JwtResponse (token, user.getRole (), user.getEmail ());
+            return new JwtResponse (token, user.getRole (), user.getEmail (), user.getId ());
         } else {
             throw new RuntimeException ("Invalid Credentials");
         }
@@ -133,7 +133,7 @@ public class AuthService {
 
         // Generate OTP
         String otp = String.format ("%06d", new Random ().nextInt (999999));
-
+        System.out.println (otp);
         user.setOtp (otp);
         user.setOtpExpiry (LocalDateTime.now ().plusMinutes (5));
 
