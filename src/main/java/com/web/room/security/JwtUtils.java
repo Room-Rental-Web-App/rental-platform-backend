@@ -17,10 +17,6 @@ public class JwtUtils {
     @Value("${app.jwt.expirationMs}")
     private Long jwtExpirationMs;
 
-    @Value("${app.jwt.refreshExpirationMs}")
-    private Long refreshExpirationMs;
-
-
     // 1. Ye raha wo method jo missing hai
     private Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
