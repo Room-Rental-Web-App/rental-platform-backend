@@ -80,9 +80,6 @@ public class AdminController {
         return ResponseEntity.ok("Room listing approved and is now live!");
     }
 
-    /**
-     * Reject a room listing.
-     */
     @PutMapping("/reject-room/{id}")
     public ResponseEntity<String> rejectRoom(@PathVariable Long id) {
         adminService.updateRoomApprovalStatus(id, false);
