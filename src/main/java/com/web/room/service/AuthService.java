@@ -116,7 +116,7 @@ public class AuthService {
 
         if (encoder.matches (password, user.getPassword ())) {
             String token = jwtUtils.generateToken (email, user.getRole ());
-            return new JwtResponse (token, user.getRole (), user.getEmail (), user.getId ());
+            return new JwtResponse (token, user.getRole (), user.getEmail (), user.getId (), user.getFullName (), user.getPhone ());
         } else {
             throw new RuntimeException ("Invalid Credentials");
         }
