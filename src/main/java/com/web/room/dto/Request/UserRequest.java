@@ -1,16 +1,13 @@
-package com.web.room.dto.Response;
+package com.web.room.dto.Request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class JwtResponse {
-    private String token;
-    private String role;
-    private String email;
+@AllArgsConstructor
+public class UserRequest {
     private Long id;
     private String fullName;
     private String phone;

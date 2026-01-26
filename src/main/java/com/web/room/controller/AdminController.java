@@ -85,6 +85,7 @@ public class AdminController {
         adminService.updateRoomApprovalStatus(id, false);
         return ResponseEntity.ok("Room listing has been rejected.");
     }
+
     @DeleteMapping("/rooms/{id}")
     public ResponseEntity<String> deleteRoom(@PathVariable Long id) {
         adminService.deleteRoomById(id); // We need to add this in AdminService
