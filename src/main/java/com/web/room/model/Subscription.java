@@ -23,4 +23,7 @@ public class Subscription {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private boolean active;
+    public  boolean getActive(){
+        return  this.active;
+    }
 }
