@@ -76,4 +76,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     int countByOwnerEmail(String ownerEmail);
 
+    @Query("SELECT DISTINCT r.city FROM Room r WHERE r.city IS NOT NULL")
+    List<String> findAllCities();
 }

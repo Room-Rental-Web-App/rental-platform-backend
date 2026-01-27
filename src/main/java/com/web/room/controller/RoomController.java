@@ -125,10 +125,6 @@ public class RoomController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size
     ) {
-        System.out.println ();
-        System.out.println (" city: " + city + " pincode: " + pincode + " roomType: " + roomType + " minPrice: " + minPrice + " maxPrice: " + maxPrice + " userLat: " + userLat + " userLng: " + userLng + " radiusKm: " + radiusKm + " page: " + page + " size: " + size);
-
-        System.out.println ();
         return ResponseEntity.ok(
                 roomService.filterRooms(city, pincode, roomType, minPrice, maxPrice,
                         userLat, userLng, radiusKm, page, size)
@@ -142,6 +138,11 @@ public class RoomController {
     @GetMapping("/roomCount/{ownerEmail}")
     public int getRoomCount(@PathVariable String ownerEmail) {
         return roomService.getRoomCount(ownerEmail);
+    }
+
+    @GetMapping("/cities")
+    public List<String> getCitiesCovered(){
+        return  roomService.getCitiesCovered();
     }
 
 }

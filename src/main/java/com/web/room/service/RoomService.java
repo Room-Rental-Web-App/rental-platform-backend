@@ -149,4 +149,8 @@ public class RoomService {
     public int getRoomCount(String ownerEmail) {
         return roomRepository.countByOwnerEmail(ownerEmail);
     }
+
+    public List<String> getCitiesCovered() {
+      return  roomRepository.findAllCities();
+    }
 }
