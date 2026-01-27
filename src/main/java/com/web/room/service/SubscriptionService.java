@@ -1,6 +1,6 @@
 package com.web.room.service;
 
-import com.web.room.interfaces.RevenueProjection;
+import com.web.room.interfaces.SubscriptionResponse;
 import com.web.room.model.Subscription;
 import com.web.room.repository.SubscriptionRepository;
 import org.springframework.http.ResponseEntity;
@@ -30,10 +30,12 @@ public class SubscriptionService {
         return ResponseEntity.ok (repo.findAllByEmail (email));
     }
 
-    public List<RevenueProjection> getRevenueReport(String role, Integer days, String from, String to) {
-        return repo.getRevenueReport ( (role == null || role.isBlank()) ? null : role,
+    public List<SubscriptionResponse> getRevenueReport(String role, Integer days, String from, String to) {
+        List<Subscription> subscriptions = repo.getRevenueReport ( (role == null || role.isBlank()) ? null : role,
                 days,
                 (from == null || from.isBlank()) ? null : LocalDateTime.parse(from),
                 (to == null || to.isBlank()) ? null : LocalDateTime.parse(to));
+
+        return subscriptions.stream ().map (SubscriptionResponse::new).toList ();
     }
 }
