@@ -61,10 +61,7 @@ public class GoogleAuthService {
         });
 
         String jwtToken = jwtUtils.generateToken (user.getEmail (), user.getRole ());
-        JwtResponse response = new JwtResponse ();
-        response.setToken (jwtToken);
-        response.setRole (user.getRole ());
-        response.setEmail (user.getEmail ());
+        JwtResponse response = new JwtResponse (jwtToken,user.getRole (),user.getEmail (), user.getId (), user.getFullName (),user.getPhone ());
         return response;
     }
 
@@ -82,17 +79,14 @@ public class GoogleAuthService {
                 user.setPhone (req.getPhone ());
                 user.setAadharUrl (secureUrl);
                 userRepo.save (user);
-                JwtResponse response = new JwtResponse ();
-                response.setToken (jwtUtils.generateToken (user.getEmail (), user.getRole ()));
-                response.setRole (user.getRole ());
-                response.setEmail (req.getEmail ());
-                return response;
+                return new JwtResponse (jwtUtils.generateToken (user.getEmail (), user.getRole ()),user.getRole (),user.getEmail (), user.getId (), user.getFullName (),user.getPhone ());
             } catch (IOException e) {
                 throw new RuntimeException ("Image upload failed: " + e.getMessage ());
             }
         } else {
             throw new RuntimeException ("Aadhar Card photo is required for Registration");
         }
+
 
     }
 }
