@@ -3,6 +3,8 @@ package com.web.room.controller;
 import com.web.room.model.Review;
 import com.web.room.service.ReviewService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
 @RestController
 @RequestMapping("/api/reviews")
@@ -23,5 +25,9 @@ public class ReviewController {
     @GetMapping("/room/{roomId}")
     public Map<String,Object> get(@PathVariable Long roomId) {
         return service.getRoomReviews(roomId);
+    }
+    @GetMapping("/top")
+    public List<Review> getTopReviews() {
+        return service.getTopReviews();
     }
 }

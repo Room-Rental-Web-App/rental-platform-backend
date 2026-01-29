@@ -1,5 +1,6 @@
 package com.web.room.repository;
 
+import com.web.room.model.Review;
 import com.web.room.model.Room;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -78,4 +79,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     @Query("SELECT DISTINCT r.city FROM Room r WHERE r.city IS NOT NULL")
     List<String> findAllCities();
+    List<Room> findTop6ByOrderByIdDesc();
+
 }

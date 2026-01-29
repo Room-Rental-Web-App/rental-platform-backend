@@ -109,6 +109,11 @@ public class RoomController {
         return ResponseEntity.ok (roomService.findRoom ());
     }
 
+    @GetMapping("/featured")
+    public ResponseEntity<List<Room>> getFeaturedRooms() {
+        return ResponseEntity.ok(roomService.getFeaturedRooms(6));
+    }
+
     @GetMapping("/filter")
     public ResponseEntity<Page<Room>> filterRooms(
             @RequestParam(required = false) String city,
