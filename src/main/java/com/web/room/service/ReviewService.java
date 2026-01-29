@@ -57,4 +57,8 @@ public class ReviewService {
 
         return map;
     }
+    public List<Review> getTopReviews() {
+
+        return repo.findTop6ByRatingGreaterThanEqualOrderByCreatedAtDesc(4);
+    }
 }

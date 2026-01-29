@@ -153,4 +153,8 @@ public class RoomService {
     public List<String> getCitiesCovered() {
       return  roomRepository.findAllCities();
     }
+    public List<Room> getFeaturedRooms(int limit) {
+
+        return roomRepository.findTop6ByOrderByIdDesc();
+    }
 }
