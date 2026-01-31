@@ -1,6 +1,5 @@
 package com.web.room.repository;
 
-import com.web.room.model.Review;
 import com.web.room.model.Room;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,20 +14,19 @@ import java.util.List;
 public interface RoomRepository extends JpaRepository<Room, Long> {
 
     // 1. For Tenants: Show only approved rooms
-    List<Room> findByIsApprovedByAdminTrue();
+    List<Room> findByApprovedByAdminTrue();
 
     // 2. For Admin: Show rooms waiting for approval
-    List<Room> findByIsApprovedByAdminFalse();
+    List<Room> findByApprovedByAdminFalse();
 
-    // 3. For Owners: See their own rooms (Approved + Pending)
+    // 3. For Owners: See their own rooms
     List<Room> findByOwnerEmail(String email);
-
 
     @Query("""
     SELECT r
     FROM Room r
-    WHERE r.isApprovedByAdmin = true
-      AND r.isAvailable = true
+    WHERE r.approvedByAdmin = true
+      AND r.available = true
       AND r.latitude IS NOT NULL
       AND r.longitude IS NOT NULL
 
@@ -74,11 +72,14 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             Pageable pageable
     );
 
-
     int countByOwnerEmail(String ownerEmail);
 
     @Query("SELECT DISTINCT r.city FROM Room r WHERE r.city IS NOT NULL")
     List<String> findAllCities();
+
     List<Room> findTop6ByOrderByIdDesc();
 
+    // FIX: available field name updated in JPQL
+    @Query("SELECT r FROM Room r WHERE r.contactViewCount >= :limit AND r.available = true")
+    List<Room> findHighInterestRooms(@Param("limit") Integer limit);
 }

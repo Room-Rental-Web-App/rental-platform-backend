@@ -40,8 +40,7 @@ public class RoomController {
             // Important: Handle Java 8 Date/Time types
 //            objectMapper.registerModule(new JavaTimeModule());
             // Important: Don't crash if extra fields are sent from frontend
-            objectMapper.configure (DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+            objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
             Room room = objectMapper.readValue (roomDataJson, Room.class);
 
             Room savedRoom = roomService.createRoom (room, images, video);
@@ -150,4 +149,11 @@ public class RoomController {
         return  roomService.getCitiesCovered();
     }
 
+
+
+    @PatchMapping("/{roomId}/increment-contact")
+    public ResponseEntity<?> incrementContact(@PathVariable Long roomId) {
+        roomService.incrementContactCount(roomId);
+        return ResponseEntity.ok().body(Map.of("message", "Contact count updated"));
+    }
 }
