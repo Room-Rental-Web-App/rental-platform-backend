@@ -11,7 +11,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin")
 @CrossOrigin(origins = "http://localhost:5173")
-public class AdminController {
+public class
+AdminController {
 
     @Autowired
     private AdminService adminService;
@@ -90,5 +91,16 @@ public class AdminController {
     public ResponseEntity<String> deleteRoom(@PathVariable Long id) {
         adminService.deleteRoomById(id); // We need to add this in AdminService
         return ResponseEntity.ok("Room deleted successfully");
+    }
+    @GetMapping("/high-interest-rooms")
+    public ResponseEntity<List<Room>> getHighInterestRooms(@RequestParam(defaultValue = "5") int limit) {
+        return ResponseEntity.ok(adminService.getHighInterestRooms(limit));
+    }
+    @PatchMapping("/mark-booked/{id}")
+    public ResponseEntity<String> markAsBooked(
+            @PathVariable Long id,
+            @RequestParam String adminEmail) {
+        adminService.markRoomAsBooked(id, adminEmail);
+        return ResponseEntity.ok("Room marked as Booked and Owner notified.");
     }
 }
