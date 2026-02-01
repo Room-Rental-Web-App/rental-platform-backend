@@ -1,7 +1,9 @@
 package com.web.room.service;
 
 import com.web.room.model.Room;
+import com.web.room.model.Subscription;
 import com.web.room.repository.RoomRepository;
+import com.web.room.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,8 +24,17 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final CloudinaryService cloudinaryService;
+    private final SubscriptionRepository subscriptionRepo;
 
+    /**
+     * Creates a room after strictly validating the owner's subscription limit.
+     */
     public Room createRoom(Room room, List<MultipartFile> images, MultipartFile video) {
+
+        // 1. SECURITY CHECK: Validate Room Limit before any file processing
+        validateRoomLimit(room.getOwnerEmail());
+
+        // 2. Process File Uploads (Only happens if limit check passes)
         List<String> imageUrls = new ArrayList<>();
         if (images != null && !images.isEmpty()) {
             for (MultipartFile file : images) {
@@ -40,13 +51,49 @@ public class RoomService {
             room.setVideoUrl(videoUrl);
         }
 
-        // IMPORTANT: Defaults for new room
+        // 3. Set Default Persistence Values
         room.setApprovedByAdmin(false);
-        room.setAvailable(true); // Default available
+        room.setAvailable(true);
         room.setContactViewCount(0);
+        room.setCreatedAt(LocalDateTime.now());
 
         return roomRepository.save(room);
     }
+
+    /**
+     * Enforces the NEW strictly reduced room limits.
+     */
+    private void validateRoomLimit(String email) {
+        long currentRooms = roomRepository.countByOwnerEmail(email);
+
+        Optional<Subscription> subOpt = subscriptionRepo.findTopByEmailAndRoleAndActiveTrueAndEndDateAfterOrderByEndDateDesc(
+                email, "ROLE_OWNER", LocalDateTime.now()
+        );
+
+        int allowedLimit = 2; // Default Free Tier
+
+        if (subOpt.isPresent()) {
+            String plan = subOpt.get().getPlanCode();
+
+            // STRICT REDUCED LIMITS MAPPING
+            if (plan.contains("7D")) {
+                allowedLimit = 3;      // Trial
+            } else if (plan.contains("30D")) {
+                allowedLimit = 6;      // Monthly
+            } else if (plan.contains("180D")) {
+                allowedLimit = 15;     // Half-Yearly
+            } else if (plan.contains("365D")) {
+                allowedLimit = 40;     // Yearly
+            }
+        }
+
+        if (currentRooms >= allowedLimit) {
+            throw new RuntimeException("Limit reached! You have " + currentRooms +
+                    " rooms. Upgrade your plan to increase your limit beyond " + allowedLimit + " rooms.");
+        }
+    }
+
+    // ... [Rest of the methods: deleteRoom, updateRoom, etc. remain unchanged]
 
     @Transactional
     public void deleteRoom(Long id, String email) {
@@ -102,7 +149,6 @@ public class RoomService {
         existingRoom.setContactNumber(updatedDetails.getContactNumber());
         existingRoom.setRoomType(updatedDetails.getRoomType());
 
-        // FIX: Toggle availability if passed from frontend
         if (updatedDetails.getAvailable() != null) {
             existingRoom.setAvailable(updatedDetails.getAvailable());
         }
@@ -114,14 +160,12 @@ public class RoomService {
         return roomRepository.findByOwnerEmail(email);
     }
 
-    // FIX: Method name updated to match new Repository method
     public List<Room> getRoomsByPincode(String pincode) {
         return roomRepository.findByApprovedByAdminTrue().stream()
                 .filter(r -> r.getPincode().equals(pincode))
                 .toList();
     }
 
-    // FIX: Method name updated
     public List<Room> findRoom() {
         return roomRepository.findByApprovedByAdminTrue();
     }
@@ -135,7 +179,7 @@ public class RoomService {
         return roomRepository.findById(roomId).orElse(null);
     }
 
-    public int getRoomCount(String ownerEmail) {
+    public long getRoomCount(String ownerEmail) {
         return roomRepository.countByOwnerEmail(ownerEmail);
     }
 

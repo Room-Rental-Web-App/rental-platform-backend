@@ -39,7 +39,7 @@ public class UserService {
                 });
     }
 
-    public int getRoomCount(String ownerEmail) {
+    public long getRoomCount(String ownerEmail) {
         return roomRepo.countByOwnerEmail (ownerEmail);
     }
 
