@@ -20,12 +20,23 @@ public class UserService {
     private final UserRepository userRepo;
 
     public User getRoomOwner(Long roomId, String userEmail) {
-        System.out.println (" roomId: " + roomId + " userEmail: " + userEmail);
-        Room room = roomRepo.findById (roomId)
-                .orElseThrow (() -> new RuntimeException ("Room not found"));
+        System.out.println("Fetching owner for roomId: " + roomId);
 
-        return userRepo.findByEmail (room.getOwnerEmail ())
-                .orElseThrow (() -> new RuntimeException ("Owner not found"));
+        // 1. Room dhundo
+        Room room = roomRepo.findById(roomId).orElse(null);
+        if (room == null) {
+            System.out.println("Room not found with ID: " + roomId);
+            return null;
+        }
+
+        // 2. Owner dhundo (Typos handle karne ke liye trim aur lowercase use karein)
+        String ownerEmail = room.getOwnerEmail().trim().toLowerCase();
+
+        return userRepo.findByEmail(ownerEmail)
+                .orElseGet(() -> {
+                    System.out.println("Owner not found in DB with email: " + ownerEmail);
+                    return null; // Crash ki jagah null return karega
+                });
     }
 
     public int getRoomCount(String ownerEmail) {
