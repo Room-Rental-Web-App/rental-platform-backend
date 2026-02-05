@@ -11,9 +11,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "rooms")
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Room {
 
     @Id

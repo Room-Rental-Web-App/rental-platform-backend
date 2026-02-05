@@ -1,21 +1,29 @@
 package com.web.room.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.web.room.model.Room;
+import com.web.room.model.RoomAvailabilityRequest;
+import com.web.room.model.User;
+import com.web.room.repository.RoomAvailabilityRequestRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
+    private final RoomAvailabilityRequestRepository requestRepository;
 
     /**
      * User ko login OTP bhejne ke liye method
      * @param to - User ki email id
      * @param otp - 6 digit generated OTP
      */
+
     public void sendOtpEmail(String to, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -24,7 +32,7 @@ public class EmailService {
             message.setSubject(subject);
             message.setText(body);
             mailSender.send(message);
-            System.out.println("Email sent successfully to: " + to);
+            System.out.println("OTP Email sent successfully to: " + to);
         } catch (Exception e) {
             System.err.println("Failed to send email: " + e.getMessage());
             throw new RuntimeException("Email service is currently unavailable.");
@@ -40,10 +48,27 @@ public class EmailService {
                 message.setText(body);
 
                 mailSender.send(message);
-                System.out.println("Email sent successfully to: " + to);
+                System.out.println("Simple Email sent successfully to: " + to);
             } catch (Exception e) {
                 System.err.println("Failed to send email: " + e.getMessage());
             }
 
+        }
+
+    public void notifyWaitingUsers(Room room) {
+        List<RoomAvailabilityRequest> requests = requestRepository.findByRoomIdAndNotifiedFalse (room.getId ());
+        for (RoomAvailabilityRequest req : requests) {
+            User user = req.getUser ();
+            System.out.println (user.getEmail () + "notified send ");
+            String subject = "Room Available: " + room.getTitle ();
+
+            String body =
+                    "Hello " + user.getFullName () + ",\n\n" + "Good news! The room you requested is now available.\n\n" + "Room Details:\n" + " Room-id: " + room.getId () + "\n" + "Title: " + room.getTitle () + "\n" + "Address: " + room.getAddress () + ", " + room.getCity () + "\n" + "Price: ₹" + room.getPrice () + "\n\n" + "Please book it as soon as possible.\n\n" + "Regards,\n" + "Room Management Team";
+            req.setNotified (true);
+
+            sendSimpleEmail(user.getEmail(), subject, body);
+            req.setNotified(true);
+        }
+        requestRepository.saveAll (requests);
     }
 }

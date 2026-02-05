@@ -26,27 +26,16 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     SELECT r
     FROM Room r
     WHERE r.approvedByAdmin = true
-      AND r.available = true
       AND r.latitude IS NOT NULL
       AND r.longitude IS NOT NULL
 
-      AND (:city IS NULL 
-           OR LOWER(r.city) = LOWER(:city))
+      AND (:city IS NULL OR LOWER(r.city) = LOWER(:city))
+      AND (:pincode IS NULL OR r.pincode = :pincode)
+      AND (:roomType IS NULL OR r.roomType = :roomType)
+      AND (:minPrice IS NULL OR r.price >= :minPrice)
+      AND (:maxPrice IS NULL OR r.price <= :maxPrice)
 
-      AND (:pincode IS NULL 
-           OR r.pincode = :pincode)
-
-      AND (:roomType IS NULL 
-           OR r.roomType = :roomType)
-
-      AND (:minPrice IS NULL 
-           OR r.price >= :minPrice)
-
-      AND (:maxPrice IS NULL 
-           OR r.price <= :maxPrice)
-
-      AND (:userLat IS NULL 
-           OR (
+      AND (:userLat IS NULL OR (
                6371 * 2 * ASIN(
                    SQRT(
                        POWER(SIN(RADIANS(r.latitude - :userLat) / 2), 2)
