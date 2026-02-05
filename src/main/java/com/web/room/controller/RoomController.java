@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.web.room.model.Room;
 import com.web.room.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.server.servlet.ConfigurableServletWebServerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,8 @@ public class RoomController {
 
     // Use a single ObjectMapper instance for better performance
     private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ConfigurableServletWebServerFactory configurableServletWebServerFactory;
 
     /**
      * Endpoint to register a new room listing with media.
@@ -34,10 +37,12 @@ public class RoomController {
             @RequestPart("images") List<MultipartFile> images,
             @RequestPart(value = "video", required = false) MultipartFile video
     ) {
+        System.out.println (roomDataJson);
         try {
             // Configure mapper to handle primitives and extra fields
             objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
 
             Room room = objectMapper.readValue(roomDataJson, Room.class);
 
@@ -75,6 +80,13 @@ public class RoomController {
             return ResponseEntity.status(403).body(e.getMessage());
         }
     }
+
+    @PutMapping("/update-status/{id}/{newStatus}")
+    public ResponseEntity<?> updateAvailabilityStatus(@PathVariable Long id, @PathVariable boolean newStatus){
+        System.out.println (id + " " + newStatus    );
+         return roomService.updateAvailabilityStatus(id, newStatus);
+    }
+
 
     /**
      * Endpoint to delete a room listing.

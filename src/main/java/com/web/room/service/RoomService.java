@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +26,7 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final CloudinaryService cloudinaryService;
     private final SubscriptionRepository subscriptionRepo;
+    private final EmailService emailService;
 
     /**
      * Creates a room after strictly validating the owner's subscription limit.
@@ -133,13 +135,12 @@ public class RoomService {
 
     @Transactional
     public Room updateRoom(Long roomId, Room updatedDetails, String currentUserEmail) {
-        Room existingRoom = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+        Room existingRoom = roomRepository.findById (roomId).orElseThrow (() -> new RuntimeException ("Room not found"));
 
         if (!existingRoom.getOwnerEmail().equalsIgnoreCase(currentUserEmail)) {
             throw new RuntimeException("Unauthorized edit attempt.");
         }
-
+        System.out.println ("\n update room \n");
         existingRoom.setTitle(updatedDetails.getTitle());
         existingRoom.setDescription(updatedDetails.getDescription());
         existingRoom.setPrice(updatedDetails.getPrice());
@@ -207,4 +208,19 @@ public class RoomService {
 
         roomRepository.save(room);
     }
+
+    @Transactional
+    public ResponseEntity<?> updateAvailabilityStatus(Long id, boolean newStatus) {
+        Room room = roomRepository.findById (id).orElseThrow (() -> new RuntimeException ("Room not found"));
+        room.setAvailable (newStatus);
+        Room updatedRoom = roomRepository.save (room);
+
+        if (newStatus){
+            emailService.notifyWaitingUsers(room);
+        }
+
+        return ResponseEntity.ok ( updatedRoom);
+    }
+
+
 }
