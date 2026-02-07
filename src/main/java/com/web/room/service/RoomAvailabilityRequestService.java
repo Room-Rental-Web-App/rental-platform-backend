@@ -1,5 +1,6 @@
 package com.web.room.service;
 
+import com.web.room.dto.Response.RoomAvailabilityResponse;
 import com.web.room.model.Room;
 import com.web.room.model.RoomAvailabilityRequest;
 import com.web.room.model.User;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -47,5 +49,21 @@ public class RoomAvailabilityRequestService {
         request.setUser (user);
         requestRepository.save (request);
         return ResponseEntity.ok ("We will notify you when the room becomes available");
+    }
+
+    public ResponseEntity<?> findByUserId(Long userId) {
+        List<RoomAvailabilityRequest> list = requestRepository.findByUserId (userId);
+        List<RoomAvailabilityResponse> response = list.stream ().map (room -> new RoomAvailabilityResponse (room.getId (),
+                room.getUser ().getId (), room.getRoom (), room.getNotified (), room.getCreated ())).toList ();
+
+        return ResponseEntity.ok (response);
+    }
+
+    public ResponseEntity<?> updateNotify(Long notifyId, boolean status) {
+        RoomAvailabilityRequest request = requestRepository.findById (notifyId).orElseThrow (()-> new EntityNotFoundException ("Notification Room not found of ID: " + notifyId ));
+        request.setNotified (status);
+        RoomAvailabilityRequest saved  = requestRepository.save (request);
+        RoomAvailabilityResponse response = new RoomAvailabilityResponse (saved .getId (), saved .getUser ().getId (),saved .getRoom (), saved .getNotified (),saved .getCreated ());
+        return ResponseEntity.ok (response);
     }
 }
