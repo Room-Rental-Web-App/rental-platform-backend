@@ -66,4 +66,9 @@ public class RoomAvailabilityRequestService {
         RoomAvailabilityResponse response = new RoomAvailabilityResponse (saved .getId (), saved .getUser ().getId (),saved .getRoom (), saved .getNotified (),saved .getCreated ());
         return ResponseEntity.ok (response);
     }
+
+    public ResponseEntity<?> remove(Long notifyId) {
+        requestRepository.deleteById (notifyId);
+        return ResponseEntity.ok("notify room successfully removed");
+    }
 }
