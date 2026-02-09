@@ -23,13 +23,11 @@ public class RoomAvailabilityRequestController {
 
     @PutMapping("/updateNotify")
     public ResponseEntity<?> updateNotify(@RequestParam Long notifyId,@RequestParam boolean status ){
-        System.out.println (notifyId + " " + status);
         return service.updateNotify(notifyId, status);
     }
 
     @DeleteMapping
     public ResponseEntity<?> removeNotify(@RequestParam Long notifyId ){
-        System.out.println (notifyId + " ");
         return service.remove(notifyId);
     }
 
