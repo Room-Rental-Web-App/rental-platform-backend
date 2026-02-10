@@ -55,12 +55,12 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfiguration() {
-        CorsConfiguration cors = new CorsConfiguration ();
-        cors.setAllowedOrigins (List.of ("http://localhost:5173"));
-        cors.setAllowCredentials (true);
-        cors.setAllowedHeaders (List.of ("*"));
-        cors.setAllowedMethods (List.of ("POST", "PUT", "DELETE", "GET", "PATCH","OPTIONS"));
         UrlBasedCorsConfigurationSource url = new UrlBasedCorsConfigurationSource ();
+        CorsConfiguration cors = new CorsConfiguration ();
+        cors.setAllowCredentials (true);
+        cors.addAllowedOriginPattern("*");
+        cors.setAllowedHeaders (List.of ("*"));
+        cors.setAllowedMethods (List.of ("*"));
         url.registerCorsConfiguration ("/**", cors);
         return url;
     }
