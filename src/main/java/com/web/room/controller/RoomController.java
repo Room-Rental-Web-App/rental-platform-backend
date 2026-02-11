@@ -124,6 +124,7 @@ public class RoomController {
 
     @GetMapping("/filter")
     public ResponseEntity<Page<Room>> filterRooms(
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String pincode,
             @RequestParam(required = false) String roomType,
@@ -135,8 +136,13 @@ public class RoomController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size
     ) {
+        System.out.println ();
+        System.out.println (search);
+        System.out.println ();
         return ResponseEntity.ok(
-                roomService.filterRooms(city, pincode, roomType, minPrice, maxPrice,
+
+
+                roomService.filterRooms(search,city, pincode, roomType, minPrice, maxPrice,
                         userLat, userLng, radiusKm, page, size)
         );
     }
@@ -161,4 +167,6 @@ public class RoomController {
         roomService.incrementContactCount(roomId);
         return ResponseEntity.ok().body(Map.of("message", "Contact count updated"));
     }
+
+
 }
