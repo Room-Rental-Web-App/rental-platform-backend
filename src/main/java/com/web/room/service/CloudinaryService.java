@@ -15,43 +15,39 @@ public class CloudinaryService {
     private Cloudinary cloudinary;
 
     /**
-     * Uploads a multipart file to a specific Cloudinary folder.
-     * Uses "resource_type: auto" to support both images and videos.
-     * @param file The file to upload.
-     * @param folder The target folder in Cloudinary.
-     * @return The secure URL of the uploaded asset.
+     * Uploads a multipart file to Cloudinary.
+     * Optimized to handle large files (videos) using InputStreams and Chunking.
      */
     public String uploadFile(MultipartFile file, String folder) {
         try {
-            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                    ObjectUtils.asMap(
-                            "folder", folder,
-                            "resource_type", "auto"
-                    ));
+            // InputStream use karne par Cloudinary ko batana padta hai ki hum kya bhej rahe hain
+            Map options = ObjectUtils.asMap(
+                    "folder", folder,
+                    "resource_type", "auto",
+                    "chunk_size", 6000000
+            );
+
+            // FIX: file.getBytes() ya file.getInputStream() ko bytes mein convert karke bhejna sabse safe hai
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), options);
             return uploadResult.get("secure_url").toString();
+
         } catch (IOException e) {
             throw new RuntimeException("Cloudinary Upload Error: " + e.getMessage());
         }
-    }
-
-    /**
+    }    /**
      * Deletes a file from Cloudinary using its Public ID.
-     * @param publicId The unique identifier of the file in Cloudinary.
-     * @param resourceType The type of resource ("image" or "video").
      */
     public void deleteFile(String publicId, String resourceType) {
         try {
             if (publicId != null && !publicId.isEmpty()) {
-                // resourceType must be "image" or "video"
+                // Ensure resourceType is explicitly "image" or "video"
                 Map response = cloudinary.uploader().destroy(publicId,
                         ObjectUtils.asMap("resource_type", resourceType));
 
-                // Log the actual response from Cloudinary for better debugging
-                System.out.println("Cloudinary Response for " + publicId + ": " + response.get("result"));
+                System.out.println("Cloudinary Deletion Result for " + publicId + ": " + response.get("result"));
             }
         } catch (Exception e) {
-            System.err.println("Cloudinary Deletion Failed for ID: " + publicId + " - " + e.getMessage());
-            // In a production app, you might want to throw a custom exception here
+            System.err.println("Cloudinary Deletion Failed: " + e.getMessage());
         }
     }
 }

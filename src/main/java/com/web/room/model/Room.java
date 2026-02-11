@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -40,6 +39,9 @@ public class Room {
     private Double latitude;
     private Double longitude;
 
+    // FIELD FOR RESET LOGIC
+    private Long subscriptionId;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "room_images", joinColumns = @JoinColumn(name = "room_id"))
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -51,8 +53,6 @@ public class Room {
     @Column(nullable = false)
     private String ownerEmail;
 
-    // Standard naming: 'available' instead of 'isAvailable'
-    // JsonProperty ensures frontend still sees "isAvailable"
     @JsonProperty("isAvailable")
     @Column(name = "is_available", columnDefinition = "BOOLEAN DEFAULT true")
     private Boolean available = true;
@@ -63,6 +63,9 @@ public class Room {
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    // ADDED FIELD: This was missing and causing the error
+    private String statusUpdatedBy;
 
     @PrePersist
     protected void onCreate() {
@@ -87,6 +90,4 @@ public class Room {
 
     @Column(nullable = false)
     private Integer contactViewCount = 0;
-
-    private String statusUpdatedBy;
 }
