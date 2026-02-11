@@ -88,4 +88,8 @@ ORDER BY r.priorityScore DESC,
     // FIX: available field name updated in JPQL
     @Query("SELECT r FROM Room r WHERE r.contactViewCount >= :limit AND r.available = true")
     List<Room> findHighInterestRooms(@Param("limit") Integer limit);
+
+    long countByOwnerEmailAndSubscriptionIdIsNull(String email);
+
+    long countByOwnerEmailAndSubscriptionId(String email, Long id);
 }
