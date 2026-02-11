@@ -61,7 +61,6 @@ WHERE r.approvedByAdmin = true
           )
       ) <= :radiusKm
   )
-
 ORDER BY r.priorityScore DESC,
          r.createdAt DESC
 """)

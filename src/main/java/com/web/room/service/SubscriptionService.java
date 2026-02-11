@@ -21,52 +21,46 @@ public class SubscriptionService {
     private final RoomRepository roomRepo;
 
     /**
-     * Smart Check: Returns detailed status with the NEW strictly reduced room limits.
+     * Smart Check: Returns detailed status based on CURRENT plan usage only.
      */
     public ResponseEntity<?> isPremium(String email, String role) {
-        // 1. Fetch active subscription
+        // 1. Fetch latest active subscription
         Optional<Subscription> subOpt = subscriptionRepo.findTopByEmailAndRoleAndActiveTrueAndEndDateAfterOrderByEndDateDesc(
                 email, role, LocalDateTime.now()
         );
 
-        // 2. Default values for Free Users
         boolean isPremium = subOpt.isPresent();
-        int roomLimit = 2; // Fixed Free Limit
+        int roomLimit = 2;
         String planCode = "FREE";
         LocalDateTime endDate = null;
+        long currentPlanCount = 0; // Standardized variable name
 
-        // 3. Determine limits based on the new reduced-count strategy
         if (isPremium) {
             Subscription sub = subOpt.get();
             planCode = sub.getPlanCode();
             endDate = sub.getEndDate();
 
-            // Room limits mapped to your new request:
-            if (planCode.contains("7D")) {
-                roomLimit = 3;      // Trial (7 Days @ 99)
-            } else if (planCode.contains("30D")) {
-                roomLimit = 6;      // Monthly (1 Month @ 199)
-            } else if (planCode.contains("180D")) {
-                roomLimit = 15;     // Half-Yearly (6 Months @ 999)
-            } else if (planCode.contains("365D")) {
-                roomLimit = 40;     // Yearly (1 Year @ 1499)
-            }
-        }
+            // Set limits based on plan
+            if (planCode.contains("7D")) roomLimit = 3;
+            else if (planCode.contains("30D")) roomLimit = 6;
+            else if (planCode.contains("180D")) roomLimit = 15;
+            else if (planCode.contains("365D")) roomLimit = 40;
 
-        // 4. Calculate current room count
-        long currentRooms = 0;
-        if ("ROLE_OWNER".equals(role)) {
-            currentRooms = roomRepo.countByOwnerEmail(email);
+            // Logic: Count only rooms linked to THIS subscription ID (Fresh Start)
+            currentPlanCount = roomRepo.countByOwnerEmailAndSubscriptionId(email, sub.getId());
+        } else {
+            // Count rooms without any subscription ID (Free users)
+            currentPlanCount = roomRepo.countByOwnerEmailAndSubscriptionIdIsNull(email);
         }
 
         // 5. Response for Frontend
         return ResponseEntity.ok(Map.of(
                 "isPremium", isPremium,
                 "planCode", planCode,
-                "endDate", endDate != null ? endDate : "N/A",
+                "endDate", endDate != null ? endDate.toString() : "N/A",
                 "roomLimit", roomLimit,
-                "currentRoomCount", currentRooms,
-                "canAddMoreRooms", currentRooms < roomLimit
+                "currentRoomCount", currentPlanCount,
+                "canAddMoreRooms", currentPlanCount < roomLimit
         ));
     }
 

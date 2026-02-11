@@ -30,13 +30,19 @@ public class RoomService {
 
     /**
      * Creates a room after strictly validating the owner's subscription limit.
+     * UPDATED: Now links rooms to the current subscription for counter reset.
      */
     public Room createRoom(Room room, List<MultipartFile> images, MultipartFile video) {
 
-        // 1. SECURITY CHECK: Validate Room Limit before any file processing
-        validateRoomLimit(room.getOwnerEmail());
+        // 1. Fetch current active subscription
+        Optional<Subscription> subOpt = subscriptionRepo.findTopByEmailAndRoleAndActiveTrueAndEndDateAfterOrderByEndDateDesc(
+                room.getOwnerEmail(), "ROLE_OWNER", LocalDateTime.now()
+        );
 
-        // 2. Process File Uploads (Only happens if limit check passes)
+        // 2. SECURITY CHECK: Validate limit based ONLY on current plan usage
+        validateRoomLimit(room.getOwnerEmail(), subOpt);
+
+        // 3. Process File Uploads
         List<String> imageUrls = new ArrayList<>();
         if (images != null && !images.isEmpty()) {
             for (MultipartFile file : images) {
@@ -53,49 +59,46 @@ public class RoomService {
             room.setVideoUrl(videoUrl);
         }
 
-        // 3. Set Default Persistence Values
+        // 4. Set Default Persistence Values
         room.setApprovedByAdmin(false);
         room.setAvailable(true);
         room.setContactViewCount(0);
         room.setCreatedAt(LocalDateTime.now());
 
+        // LINKING: Set current subscription ID to reset counter for new plans
+        subOpt.ifPresent(sub -> room.setSubscriptionId(sub.getId()));
+
         return roomRepository.save(room);
     }
 
     /**
-     * Enforces the NEW strictly reduced room limits.
+     * UPDATED: Counts rooms specifically added in the current active plan.
      */
-    private void validateRoomLimit(String email) {
-        long currentRooms = roomRepository.countByOwnerEmail(email);
-
-        Optional<Subscription> subOpt = subscriptionRepo.findTopByEmailAndRoleAndActiveTrueAndEndDateAfterOrderByEndDateDesc(
-                email, "ROLE_OWNER", LocalDateTime.now()
-        );
-
+    private void validateRoomLimit(String email, Optional<Subscription> subOpt) {
         int allowedLimit = 2; // Default Free Tier
+        long usedInPlan = 0;
 
         if (subOpt.isPresent()) {
-            String plan = subOpt.get().getPlanCode();
+            Subscription sub = subOpt.get();
+            String plan = sub.getPlanCode();
 
-            // STRICT REDUCED LIMITS MAPPING
-            if (plan.contains("7D")) {
-                allowedLimit = 3;      // Trial
-            } else if (plan.contains("30D")) {
-                allowedLimit = 6;      // Monthly
-            } else if (plan.contains("180D")) {
-                allowedLimit = 15;     // Half-Yearly
-            } else if (plan.contains("365D")) {
-                allowedLimit = 40;     // Yearly
-            }
+            // New logic: count rooms linked to this specific subscription ID
+            usedInPlan = roomRepository.countByOwnerEmailAndSubscriptionId(email, sub.getId());
+
+            if (plan.contains("7D")) allowedLimit = 3;
+            else if (plan.contains("30D")) allowedLimit = 6;
+            else if (plan.contains("180D")) allowedLimit = 15;
+            else if (plan.contains("365D")) allowedLimit = 40;
+        } else {
+            // Count rooms without a subscription (Free users)
+            usedInPlan = roomRepository.countByOwnerEmailAndSubscriptionIdIsNull(email);
         }
 
-        if (currentRooms >= allowedLimit) {
-            throw new RuntimeException("Limit reached! You have " + currentRooms +
-                    " rooms. Upgrade your plan to increase your limit beyond " + allowedLimit + " rooms.");
+        if (usedInPlan >= allowedLimit) {
+            throw new RuntimeException("Limit reached for this plan! You have used " + usedInPlan +
+                    " slots. Purchase a new plan to get fresh room slots.");
         }
     }
-
-    // ... [Rest of the methods: deleteRoom, updateRoom, etc. remain unchanged]
 
     @Transactional
     public void deleteRoom(Long id, String email) {
@@ -140,7 +143,6 @@ public class RoomService {
         if (!existingRoom.getOwnerEmail().equalsIgnoreCase(currentUserEmail)) {
             throw new RuntimeException("Unauthorized edit attempt.");
         }
-        System.out.println ("\n update room \n");
         existingRoom.setTitle(updatedDetails.getTitle());
         existingRoom.setDescription(updatedDetails.getDescription());
         existingRoom.setPrice(updatedDetails.getPrice());
@@ -161,6 +163,7 @@ public class RoomService {
         return roomRepository.findByOwnerEmail(email);
     }
 
+    // THIS METHOD IS RESTORED - NO MORE SYMBOL NOT FOUND ERROR
     public List<Room> getRoomsByPincode(String pincode) {
         return roomRepository.findByApprovedByAdminTrue().stream()
                 .filter(r -> r.getPincode().equals(pincode))
@@ -221,7 +224,5 @@ public class RoomService {
 
         return ResponseEntity.ok ( updatedRoom);
     }
-
-
 
 }
