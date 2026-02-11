@@ -22,45 +22,50 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     // 3. For Owners: See their own rooms
     List<Room> findByOwnerEmail(String email);
 
-    // ============================================================
-    // START: FRESH START / RESET LOGIC QUERIES
-    // ============================================================
 
-    // Naya premium lene par usi subscription ke rooms count karne ke liye
-    long countByOwnerEmailAndSubscriptionId(String email, Long subscriptionId);
-
-    // Bina subscription wale (Free Tier) rooms count karne ke liye
-    long countByOwnerEmailAndSubscriptionIdIsNull(String email);
-
-    // ============================================================
-    // END: FRESH START LOGIC
-    // ============================================================
 
     @Query("""
-    SELECT r
-    FROM Room r
-    WHERE r.approvedByAdmin = true
-      AND r.latitude IS NOT NULL
-      AND r.longitude IS NOT NULL
-      AND (:city IS NULL OR LOWER(r.city) = LOWER(:city))
-      AND (:pincode IS NULL OR r.pincode = :pincode)
-      AND (:roomType IS NULL OR r.roomType = :roomType)
-      AND (:minPrice IS NULL OR r.price >= :minPrice)
-      AND (:maxPrice IS NULL OR r.price <= :maxPrice)
-      AND (:userLat IS NULL OR (
-               6371 * 2 * ASIN(
-                   SQRT(
-                       POWER(SIN(RADIANS(r.latitude - :userLat) / 2), 2)
-                       + COS(RADIANS(:userLat))
-                       * COS(RADIANS(r.latitude))
-                       * POWER(SIN(RADIANS(r.longitude - :userLng) / 2), 2)
-                   )
-               )
-           ) <= :radiusKm)
-    ORDER BY r.priorityScore DESC,
-             r.createdAt DESC
-    """)
-    Page<Room> filterRoomsWithRadius(
+SELECT r
+FROM Room r
+WHERE r.approvedByAdmin = true
+  AND r.latitude IS NOT NULL
+  AND r.longitude IS NOT NULL
+
+  /* Structured filters */
+  AND (:city IS NULL OR LOWER(r.city) = LOWER(:city))
+  AND (:pincode IS NULL OR r.pincode = :pincode)
+  AND (:roomType IS NULL OR r.roomType = :roomType)
+  AND (:minPrice IS NULL OR r.price >= :minPrice)
+  AND (:maxPrice IS NULL OR r.price <= :maxPrice)
+
+  /* Keyword search */
+  AND (
+      :keyword IS NULL OR
+      LOWER(r.city) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      OR LOWER(r.address) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      OR r.pincode LIKE CONCAT('%', :keyword, '%')
+      OR LOWER(r.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
+  )
+
+  /* Radius filter */
+  AND (
+      :userLat IS NULL OR (
+          6371 * 2 * ASIN(
+              SQRT(
+                  POWER(SIN(RADIANS(r.latitude - :userLat) / 2), 2)
+                  + COS(RADIANS(:userLat))
+                  * COS(RADIANS(r.latitude))
+                  * POWER(SIN(RADIANS(r.longitude - :userLng) / 2), 2)
+              )
+          )
+      ) <= :radiusKm
+  )
+ORDER BY r.priorityScore DESC,
+         r.createdAt DESC
+""")
+    Page<Room> searchAndFilterRooms(
+            @Param("keyword") String keyword,
             @Param("city") String city,
             @Param("pincode") String pincode,
             @Param("roomType") String roomType,
@@ -72,6 +77,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             Pageable pageable
     );
 
+
     long countByOwnerEmail(String ownerEmail);
 
     @Query("SELECT DISTINCT r.city FROM Room r WHERE r.city IS NOT NULL")
@@ -79,6 +85,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     List<Room> findTop6ByOrderByIdDesc();
 
+    // FIX: available field name updated in JPQL
     @Query("SELECT r FROM Room r WHERE r.contactViewCount >= :limit AND r.available = true")
     List<Room> findHighInterestRooms(@Param("limit") Integer limit);
 }
