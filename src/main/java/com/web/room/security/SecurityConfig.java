@@ -28,31 +28,41 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder (); // Password ko encode karne ke liye
     }
 
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
-                .csrf (AbstractHttpConfigurer::disable)
-                .cors (cors -> cors.configurationSource (corsConfiguration ()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfiguration()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // 1. Auth Endpoints (Sabke liye open)
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/rooms/search").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/rooms/findRoom").permitAll()
+
+                        // 2. Room Endpoints - Public Access (Search, Featured, etc.)
+                        .requestMatchers(HttpMethod.GET, "/api/rooms/search", "/api/rooms/featured", "/api/rooms/cities").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/rooms/{id}", "/api/reviews/top").permitAll()
+
+                        // 3. Room Endpoints - Owner Only (apiConfig ke ADD_ROOM, UPDATE_ROOM, MY_LISTINGS etc.)
+                        .requestMatchers("/api/rooms/add", "/api/rooms/my-listings").hasRole("OWNER")
+                        .requestMatchers("/api/rooms/update/**", "/api/rooms/update-status/**", "/api/rooms/delete/**").hasRole("OWNER")
+
+                        // 4. Admin Endpoints (apiConfig ke ADMIN_ALL_USERS, APPROVE_OWNER, etc.)
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // 5. Wishlist Endpoints (Authenticated Users)
+                        .requestMatchers("/api/wishlist/**").authenticated()
+
+                        // Pre-flight requests (CORS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Pre-flight allow karein
-                        .requestMatchers("/api/rooms/add").permitAll() // Temporary test ke liye
-//                        .requestMatchers("/api/rooms/add").hasRole("OWNER") // Ensure DB has ROLE_OWNER
-                        .requestMatchers("/api/admin/**").permitAll()
-                        .anyRequest().permitAll()
+
+                        // Baki sab kuch lock
+                        .anyRequest().authenticated()
                 );
 
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
-
     @Bean
     public CorsConfigurationSource corsConfiguration() {
         UrlBasedCorsConfigurationSource url = new UrlBasedCorsConfigurationSource ();
