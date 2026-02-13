@@ -37,5 +37,5 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
             @Param("to") LocalDateTime to
     );
 
-
+    List<Subscription> findByActiveTrueAndEndDateBefore(LocalDateTime now);
 }

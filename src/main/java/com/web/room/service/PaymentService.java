@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,51 +29,36 @@ public class PaymentService {
     private String razorpayKeySecret;
 
     private final SubscriptionRepository subscriptionRepo;
+    private final EmailService emailService;     // Inject Email Service
+    private final InvoiceService invoiceService; // Inject Invoice Service
 
-    /**
-     * Updated Maps to reflect the new Pricing and specific Duration.
-     * Note: Room counts are handled in the SubscriptionService and RoomService
-     * based on these Durations.
-     */
     private static final Map<Integer, Integer> OWNER_PLANS = Map.of(
-            99, 7,      // Trial (Reduced Rooms)
-            199, 30,    // 1 Month
-            999, 180,   // 6 Months
-            1499, 365   // 1 Year
+            99, 7, 199, 30, 999, 180, 1499, 365
     );
 
     private static final Map<Integer, Integer> USER_PLANS = Map.of(
-            99, 30,
-            499, 180,
-            899, 365
+            69, 30, 299, 180, 499, 365
     );
 
     public ResponseEntity<?> createOrder(Map<String, String> request) {
         try {
             double amountToPay = Double.parseDouble(request.get("amountToPay"));
             String currency = request.get("currency");
-
             RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
             JSONObject options = new JSONObject();
             options.put("receipt", "order_rcptid_" + System.currentTimeMillis());
-            options.put("amount", (int) (amountToPay * 100)); // Razorpay expects Paisa
+            options.put("amount", (int) (amountToPay * 100));
             options.put("currency", currency);
-
             Order order = client.orders.create(options);
-
-            return ResponseEntity.ok(Map.of(
-                    "orderId", order.get("id"),
-                    "razorpayKey", razorpayKeyId
-            ));
+            return ResponseEntity.ok(Map.of("orderId", order.get("id"), "razorpayKey", razorpayKeyId));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error creating Razorpay order");
         }
     }
 
     public ResponseEntity<?> varifyPayment(Map<String, String> req) {
         try {
-            // 1. Signature Verification (Security First)
+            // 1. Signature Verification
             JSONObject attrs = new JSONObject();
             attrs.put("razorpay_payment_id", req.get("razorpayPaymentId"));
             attrs.put("razorpay_order_id", req.get("razorpayOrderId"));
@@ -81,42 +69,50 @@ public class PaymentService {
             String role = req.get("role");
             double amount = Double.parseDouble(req.get("amountToPay"));
 
-            // 2. Fetch Existing Subscription for Extension Logic
-            Optional<Subscription> old = subscriptionRepo
-                    .findTopByEmailAndRoleAndActiveTrueAndEndDateAfterOrderByEndDateDesc(email, role, LocalDateTime.now());
+            // 2. Logic for Extension
+            Optional<Subscription> old = subscriptionRepo.findTopByEmailAndRoleAndActiveTrueAndEndDateAfterOrderByEndDateDesc(email, role, LocalDateTime.now());
+            LocalDateTime base = (old.isPresent()) ? old.get().getEndDate() : LocalDateTime.now();
 
-            LocalDateTime base = (old.isPresent() && old.get().getEndDate().isAfter(LocalDateTime.now()))
-                    ? old.get().getEndDate()
-                    : LocalDateTime.now();
+            Integer days = role.equals("ROLE_OWNER") ? OWNER_PLANS.get((int) amount) : USER_PLANS.get((int) amount);
+            if (days == null) return ResponseEntity.badRequest().body("Invalid plan amount");
 
-            // 3. Match Duration based on Price
-            Integer days = role.equals("ROLE_OWNER")
-                    ? OWNER_PLANS.get((int) amount)
-                    : USER_PLANS.get((int) amount);
-
-            if (days == null) {
-                return ResponseEntity.badRequest().body("Invalid plan amount");
-            }
-
-            // 4. Create and Save Subscription Object
+            // 3. Save Subscription
             Subscription s = new Subscription();
             s.setEmail(email);
             s.setRole(role);
-            s.setAmountPaid(amount); // Setting this fixes the DB null constraint
+            s.setAmountPaid(amount);
             s.setRazorpayOrderId(req.get("razorpayOrderId"));
             s.setRazorpayPaymentId(req.get("razorpayPaymentId"));
             s.setPlanCode(role + "_" + days + "D");
             s.setStartDate(base);
             s.setEndDate(base.plusDays(days));
             s.setActive(true);
-
             subscriptionRepo.save(s);
 
-            return ResponseEntity.ok(Map.of("message", "Subscription successfully activated"));
+            // 4. GENERATE INVOICE & SEND EMAIL (New Logic)
+            try {
+                Map<String, Object> invoiceData = new HashMap<>();
+                invoiceData.put("orderId", s.getRazorpayOrderId());
+                invoiceData.put("date", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+                invoiceData.put("planName", s.getPlanCode());
+                invoiceData.put("amount", s.getAmountPaid());
+                invoiceData.put("startDate", s.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+                invoiceData.put("endDate", s.getEndDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+
+                byte[] pdfInvoice = invoiceService.generateInvoicePdf(invoiceData);
+
+                String subject = "Premium Activated - RoomsDekho";
+                String body = "Hi, Your premium subscription is now active until " + invoiceData.get("endDate") + ". Please find your invoice attached.";
+
+                emailService.sendEmailWithInvoice(email, subject, body, pdfInvoice);
+            } catch (Exception mailError) {
+                System.out.println("Payment Success, but Email Failed: " + mailError.getMessage());
+            }
+
+            return ResponseEntity.ok(Map.of("message", "Subscription activated and invoice sent!"));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Invalid payment or verification error");
+            return ResponseEntity.badRequest().body("Verification failed");
         }
     }
 }
