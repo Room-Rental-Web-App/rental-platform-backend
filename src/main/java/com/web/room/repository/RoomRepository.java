@@ -27,7 +27,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query("""
 SELECT r
 FROM Room r
-WHERE r.approvedByAdmin = true
+WHERE (:approved IS NULL OR r.approvedByAdmin = :approved)
+
   AND r.latitude IS NOT NULL
   AND r.longitude IS NOT NULL
 
@@ -65,6 +66,7 @@ ORDER BY r.priorityScore DESC,
          r.createdAt DESC
 """)
     Page<Room> searchAndFilterRooms(
+            @Param ("approved") boolean approved,
             @Param("keyword") String keyword,
             @Param("city") String city,
             @Param("pincode") String pincode,

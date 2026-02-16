@@ -6,7 +6,6 @@ import com.web.room.repository.RoomRepository;
 import com.web.room.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,8 +21,8 @@ public class AdminService {
     private final CloudinaryService cloudinaryService;
 
     // --- User Methods ---
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<User> getAllUsers(String email) {
+        return userRepository.findByEmailOrAll (email);
     }
 
     public List<Room> getAllRooms() {
@@ -36,13 +35,10 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    public List<User> getPendingOwners() {
-        return userRepository.findByRoleAndStatus("ROLE_OWNER", "PENDING");
+    public List<User> getPendingRole(String role, String email) {
+        return userRepository.findByRoleAndStatus (email,role, "PENDING");
     }
 
-    public List<User> getPendingUsers() {
-        return userRepository.findByRoleAndStatus("ROLE_USER", "PENDING");
-    }
 
     public void updateOwnerStatus(Long id, String status) {
         User user = userRepository.findById(id)
@@ -145,5 +141,12 @@ public class AdminService {
         String subject = "Room Status Updated by Admin";
         String body = "Your room '" + room.getTitle() + "' has been marked as BOOKED by Admin: " + adminEmail;
         emailService.sendSimpleEmail(room.getOwnerEmail(), subject, body);
+    }
+
+    public List<User> findUsersByRoleAndOptionalEmail(String email, String role) {
+        List<User> result = userRepository.findUsersByRoleAndOptionalEmail (role, email);
+
+        System.out.println ("\n" + result + "\n");
+        return result;
     }
 }

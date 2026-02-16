@@ -40,11 +40,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/allUsers")
-    public List<User> getUsersByEmailAndRole(@RequestParam(required = false) String email, @RequestParam(required = false) String role) {
-        System.out.println (role +" "+ email);
-        return service.findUsersByRoleAndOptionalEmail (email, role);
-    }
+
 
     @PatchMapping("/profile")
     public User updateUserProfile(@RequestBody UserRequest userRequest){

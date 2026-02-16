@@ -11,7 +11,13 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     List<User> findByStatus(String status);
-    List<User> findByRoleAndStatus(String roleOwner, String pending);
+    @Query("""
+             SELECT u  From User u 
+               WHERE u.role = :role
+               AND (u.status = :pending)
+               AND (:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%')))
+            """)
+    List<User> findByRoleAndStatus(String email, String role, String pending);
     @Query("""
     SELECT u
     FROM User u
@@ -22,5 +28,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("role") String role,
             @Param("email") String email
     );
+
+
+    @Query("""
+SELECT u
+FROM User u
+WHERE (:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%')))
+""")
+    List<User> findByEmailOrAll(@Param("email") String email);
 
 }

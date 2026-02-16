@@ -19,8 +19,8 @@ AdminController {
     // --- User & Owner Management ---
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(adminService.getAllUsers());
+    public ResponseEntity<List<User>> getAllUsers(@RequestParam(required = false) String email) {
+        return ResponseEntity.ok(adminService.getAllUsers(email));
     }
 
     @GetMapping("/rooms")
@@ -39,13 +39,16 @@ AdminController {
         return ResponseEntity.ok("User deleted successfully");
     }
 
-    @GetMapping("/pending-owners")
-    public ResponseEntity<List<User>> getPendingOwners() {
-        return ResponseEntity.ok(adminService.getPendingOwners());
+
+    @GetMapping("/pending")
+    public ResponseEntity<List<User>> getPendingUsers(@RequestParam(required = false) String role, @RequestParam(required = false) String email) {
+        return ResponseEntity.ok (adminService.getPendingRole (role, email));
     }
-    @GetMapping("/pending-users")
-    public ResponseEntity<List<User>> getPendingUsers() {
-        return ResponseEntity.ok(adminService.getPendingUsers());
+
+    @GetMapping("/allUsers")
+    public List<User> getUsersByEmailAndRole(@RequestParam(required = false) String email, @RequestParam(required = false) String role) {
+        System.out.println (role);
+        return adminService.findUsersByRoleAndOptionalEmail (email, role);
     }
 
 

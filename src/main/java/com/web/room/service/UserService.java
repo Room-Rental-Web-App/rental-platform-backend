@@ -43,13 +43,13 @@ public class UserService {
         return roomRepo.countByOwnerEmail (ownerEmail);
     }
 
-    public List<User> getAllUsers() {
-        return userRepo.findAll ();
-    }
-
-    public List<User> findUsersByRoleAndOptionalEmail(String email, String role) {
-        return userRepo.findUsersByRoleAndOptionalEmail (role, email);
-    }
+//    public List<User> getAllUsers() {
+//        return userRepo.findAll ();
+//    }
+//
+//    public List<User> findUsersByRoleAndOptionalEmail(String email, String role) {
+//        return userRepo.findUsersByRoleAndOptionalEmail (role, email);
+//    }
 
     public User updateUserProfile(UserRequest userRequest) {
         User user = userRepo.findById(userRequest.getId())
