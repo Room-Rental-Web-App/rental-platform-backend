@@ -124,6 +124,7 @@ public class RoomController {
 
     @GetMapping("/filter")
     public ResponseEntity<Page<Room>> filterRooms(
+            @RequestParam(required = false) boolean approved,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String pincode,
@@ -138,7 +139,7 @@ public class RoomController {
     ) {
 
         return ResponseEntity.ok(
-                roomService.filterRooms(search,city, pincode, roomType, minPrice, maxPrice,
+                roomService.filterRooms(approved, search,city, pincode, roomType, minPrice, maxPrice,
                         userLat, userLng, radiusKm, page, size)
         );
     }

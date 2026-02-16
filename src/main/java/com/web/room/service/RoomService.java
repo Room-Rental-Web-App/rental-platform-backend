@@ -174,9 +174,9 @@ public class RoomService {
         return roomRepository.findByApprovedByAdminTrue();
     }
 
-    public Page<Room> filterRooms(String search, String city, String pincode, String roomType, Double minPrice, Double maxPrice, Double userLat, Double userLng, Double radiusKm, int page, int size) {
+    public Page<Room> filterRooms(boolean approved, String search, String city, String pincode, String roomType, Double minPrice, Double maxPrice, Double userLat, Double userLng, Double radiusKm, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("priorityScore"), Sort.Order.desc("createdAt")));
-        return roomRepository.searchAndFilterRooms(search, city, pincode, roomType, minPrice, maxPrice, userLat, userLng, radiusKm, pageable);
+        return roomRepository.searchAndFilterRooms(approved,search, city, pincode, roomType, minPrice, maxPrice, userLat, userLng, radiusKm, pageable);
     }
 
     public Room getRoomDetails(Long roomId) {
