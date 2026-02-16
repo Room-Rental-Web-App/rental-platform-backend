@@ -136,12 +136,8 @@ public class RoomController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size
     ) {
-        System.out.println ();
-        System.out.println (search);
-        System.out.println ();
+
         return ResponseEntity.ok(
-
-
                 roomService.filterRooms(search,city, pincode, roomType, minPrice, maxPrice,
                         userLat, userLng, radiusKm, page, size)
         );
