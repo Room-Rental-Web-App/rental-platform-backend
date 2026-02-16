@@ -41,7 +41,9 @@ public class SecurityConfig {
 
                         // 2. Room Endpoints - Public Access (Search, Featured, etc.)
                         .requestMatchers(HttpMethod.GET, "/api/rooms/search", "/api/rooms/featured", "/api/rooms/cities").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/rooms/{id}", "/api/reviews/top").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/rooms/{id}", "/api/rooms/roomDetails/{id}", "/api/reviews/top","/api/reviews/room/{roomId}").permitAll()
+                        .requestMatchers (HttpMethod.POST, "/api/reviews/add").hasRole ("USER")
+
 
                         // 3. Room Endpoints - Owner Only (apiConfig ke ADD_ROOM, UPDATE_ROOM, MY_LISTINGS etc.)
                         .requestMatchers("/api/rooms/add", "/api/rooms/my-listings").hasRole("OWNER")
