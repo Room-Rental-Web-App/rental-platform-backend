@@ -6,6 +6,7 @@ import com.web.room.repository.RoomRepository;
 import com.web.room.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -149,4 +150,6 @@ public class AdminService {
         System.out.println ("\n" + result + "\n");
         return result;
     }
+
+
 }

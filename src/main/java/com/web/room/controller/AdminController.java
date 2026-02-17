@@ -41,8 +41,25 @@ AdminController {
 
 
     @GetMapping("/pending")
-    public ResponseEntity<List<User>> getPendingUsers(@RequestParam(required = false) String role, @RequestParam(required = false) String email) {
+    public ResponseEntity<List<User>> getPendingRoles(@RequestParam(required = false) String role, @RequestParam(required = false) String email) {
         return ResponseEntity.ok (adminService.getPendingRole (role, email));
+    }
+    @GetMapping("/pending-users")
+    public ResponseEntity<List<User>> getPendingUsers(
+            @RequestParam(required = false) String email) {
+
+        return ResponseEntity.ok(
+                adminService.getPendingRole("ROLE_USER", email)
+        );
+    }
+
+    @GetMapping("/pending-owners")
+    public ResponseEntity<List<User>> getPendingOwners(
+            @RequestParam(required = false) String email) {
+
+        return ResponseEntity.ok(
+                adminService.getPendingRole("ROLE_OWNER", email)
+        );
     }
 
     @GetMapping("/allUsers")
