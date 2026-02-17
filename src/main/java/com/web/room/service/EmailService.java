@@ -26,7 +26,7 @@ public class EmailService {
     public void sendOtpEmail(String to, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("nikhilpatel03022004@gmail.com");
+            message.setFrom("roomdekhobharat@gmail.com");
             message.setTo(to);
             message.setSubject(subject);
             message.setText(body);
@@ -41,7 +41,7 @@ public class EmailService {
     public void sendSimpleEmail(String to, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("nikhilpatel03022004@gmail.com");
+            message.setFrom("roomdekhobharat@gmail.com");
             message.setTo(to);
             message.setSubject(subject);
             message.setText(body);
@@ -75,7 +75,7 @@ public class EmailService {
             // true flag ka matlab hai multipart message (attachment ke liye)
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-            helper.setFrom("nikhilpatel03022004@gmail.com");
+            helper.setFrom("roomdekhobharat@gmail.com");
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(body);
