@@ -6,7 +6,6 @@ import com.web.room.repository.RoomRepository;
 import com.web.room.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -42,17 +41,19 @@ public class AdminService {
     }
 
 
-    public void updateOwnerStatus(Long id, String status) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void updateUserStatus(Long id, String status) {
+        User user = userRepository.findById (id).orElseThrow (() -> new RuntimeException ("User not found"));
         user.setStatus(status);
-        userRepository.save(user);
+
 
         if ("APPROVED".equals(status)) {
-            emailService.sendSimpleEmail(user.getEmail(), "Account Approved", "Your Owner account is approved!");
+            user.setIsVerifiedUser (true);
+            emailService.sendSimpleEmail(user.getEmail(), "Account Approved", "Your account is approved!");
         } else if ("REJECTED".equals(status)) {
+            user.setIsVerifiedUser (false   );
             emailService.sendSimpleEmail(user.getEmail(), "Account Rejected", "Your request was rejected.");
         }
+        userRepository.save(user);
     }
 
     // --- Room Approval Logic ---
@@ -156,4 +157,15 @@ public class AdminService {
     }
 
 
+    public ResponseEntity<?> toggleBlock(Long id, Boolean enabled) {
+        User user = userRepository.findById (id).orElseThrow (() -> new RuntimeException ("User not found"));
+
+        user.setEnabled (enabled);
+        userRepository.save (user);
+
+        String message = enabled ? "User unblocked successfully" : "User blocked successfully";
+
+        return ResponseEntity.ok (message);
+
+    }
 }

@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/admin")
 public class
@@ -69,17 +71,15 @@ AdminController {
     }
 
 
-    @PutMapping("/approve-owner/{id}")
-    public ResponseEntity<String> approveOwner(@PathVariable Long id) {
-        adminService.updateOwnerStatus(id, "APPROVED");
-        return ResponseEntity.ok("Owner approved successfully");
+    @PutMapping("/user-status/{id}")
+    public ResponseEntity<String> updateUserStatus(
+            @PathVariable Long id,
+            @RequestParam String status
+    ) {
+        adminService.updateUserStatus(id, status.toUpperCase());
+        return ResponseEntity.ok("User status updated to " + status);
     }
 
-    @PutMapping("/reject-owner/{id}")
-    public ResponseEntity<String> rejectOwner(@PathVariable Long id) {
-        adminService.updateOwnerStatus(id, "REJECTED");
-        return ResponseEntity.ok("Owner request rejected");
-    }
 
     // --- NEW: Room Approval Management ---
 
@@ -119,5 +119,10 @@ AdminController {
             @RequestParam String adminEmail) {
         adminService.markRoomAsBooked(id, adminEmail);
         return ResponseEntity.ok("Room marked as Booked and Owner notified.");
+    }
+
+    @PutMapping("/block/{id}")
+    public ResponseEntity<?> toggleBlock(@PathVariable Long id,@RequestParam Boolean enabled){
+       return adminService.toggleBlock(id,enabled);
     }
 }
