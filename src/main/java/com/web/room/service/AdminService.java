@@ -7,6 +7,7 @@ import com.web.room.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -66,24 +67,27 @@ public class AdminService {
     /**
      * Approve or Reject a Room listing
      */
-    public void updateRoomApprovalStatus(Long roomId, boolean approve) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+    public ResponseEntity<String> updateRoomApprovalStatus(Long roomId, boolean approve) {
+
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
+
+        String subject;
+        String body;
 
         if (approve) {
-            // FIX: Using new Boolean wrapper setter
             room.setApprovedByAdmin(true);
-            roomRepository.save(room);
-
-            String subject = "Room Listing Approved - " + room.getTitle();
-            String body = "Good news! Your room listing '" + room.getTitle() + "' has been approved and is now live.";
-            emailService.sendSimpleEmail(room.getOwnerEmail(), subject, body);
+            subject = "Room Listing Approved - " + room.getTitle();
+            body = "Good news! Your room listing '" + room.getTitle() + "' has been approved and is now live.";
         } else {
-            String subject = "Room Listing Update";
-            String body = "Your room listing '" + room.getTitle() + "' was not approved. Please check details.";
-            emailService.sendSimpleEmail(room.getOwnerEmail(), subject, body);
-            // roomRepository.delete(room); // Optional: Delete if rejected
+            room.setApprovedByAdmin(false);
+            subject = "Room Listing Rejected - " + room.getTitle();
+            body = "Your room listing '" + room.getTitle() + "' was not approved. Please review and update it.";
         }
+
+        roomRepository.save(room);
+        emailService.sendSimpleEmail(room.getOwnerEmail(), subject, body);
+
+        return ResponseEntity.ok("Room approval status updated successfully.");
     }
 
     public void deleteUser(Long id) {
