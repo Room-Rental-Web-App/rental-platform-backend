@@ -133,11 +133,10 @@ public class RoomController {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Double userLat,
             @RequestParam(required = false) Double userLng,
-            @RequestParam(required = false, defaultValue = "2") Double radiusKm,
+            @RequestParam(required = false) Double radiusKm,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size
     ) {
-
         return ResponseEntity.ok(
                 roomService.filterRooms(approved, search,city, pincode, roomType, minPrice, maxPrice,
                         userLat, userLng, radiusKm, page, size)
