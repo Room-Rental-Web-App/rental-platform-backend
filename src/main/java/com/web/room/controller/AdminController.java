@@ -96,14 +96,12 @@ AdminController {
      */
     @PutMapping("/approve-room/{id}")
     public ResponseEntity<String> approveRoom(@PathVariable Long id) {
-        adminService.updateRoomApprovalStatus(id, true);
-        return ResponseEntity.ok("Room listing approved and is now live!");
+       return adminService.updateRoomApprovalStatus(id, true);
     }
 
     @PutMapping("/reject-room/{id}")
     public ResponseEntity<String> rejectRoom(@PathVariable Long id) {
-        adminService.updateRoomApprovalStatus(id, false);
-        return ResponseEntity.ok("Room listing has been rejected.");
+        return adminService.updateRoomApprovalStatus(id, false);
     }
 
     @DeleteMapping("/rooms/{id}")

@@ -15,9 +15,11 @@ public class SubscriptionResponse {
     private String email;        // owner OR user email
     private String role;         // ROLE_OWNER / ROLE_USER
     private String planCode;     // USER_PLAN, OWNER_PLAN, OWNER_FEATURED
+    private Double amountPaid;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private boolean active;
+
     public SubscriptionResponse(Subscription subscription){
         this.id=subscription.getId ();
         this.email=subscription.getEmail ();
@@ -26,5 +28,6 @@ public class SubscriptionResponse {
         this.startDate=subscription.getStartDate ();
         this.endDate=subscription.getEndDate ();
         this.active=subscription.getActive();
+        this.amountPaid = subscription.getAmountPaid ();
     }
 }
