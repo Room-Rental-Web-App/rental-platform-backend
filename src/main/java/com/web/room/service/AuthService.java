@@ -101,7 +101,7 @@ public class AuthService {
         User user = userRepository.findByEmail (email)
                 .orElseThrow (() -> new RuntimeException ("User not found"));
 
-        if (!user.isEnabled ()) {
+        if (!user.getEnabled ()) {
             throw new RuntimeException ("Account not verified. Please verify OTP first.");
         }
 
