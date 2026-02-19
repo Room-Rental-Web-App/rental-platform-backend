@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 1. Auth Endpoints (Sabke liye open)
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/").permitAll()
 
                         // 2. Room Endpoints - Public Access (Search, Featured, etc.)
                         .requestMatchers(HttpMethod.GET, "/api/rooms/search", "/api/rooms/featured", "/api/rooms/cities").permitAll()
