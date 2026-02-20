@@ -9,6 +9,7 @@ import com.web.room.repository.UserRepository;
 import com.web.room.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,11 +45,12 @@ public class AuthService {
         newUser.setRole (req.getRole ());
         newUser.setPhone (req.getPhone ()); // Mobile number save kar rahe hain
         newUser.setEnabled (false);
+        newUser.setIsVerifiedUser (false);
 
 
         // --- Logic for Cloudinary & Status ---
         newUser.setStatus ("PENDING"); // Owner approval ke liye rukega
-        if (req.getAadharCard () != null && !req.getAadharCard ().isEmpty ()) {
+        if (req.getRole ().equals ("ROLE_OWNER") && req.getAadharCard () != null && !req.getAadharCard ().isEmpty ()) {
             try {
                 // Uploading to Cloudinary
                 Map uploadResult = cloudinary.uploader ().upload (req.getAadharCard ().getBytes (),
@@ -59,34 +61,40 @@ public class AuthService {
             } catch (IOException e) {
                 throw new RuntimeException ("Image upload failed: " + e.getMessage ());
             }
-        } else {
-            throw new RuntimeException ("Aadhar Card photo is required for Owners!");
         }
+        userRepository.save (newUser);
+        return sendOTP (req.getEmail ());
+    }
 
-
+    public String sendOTP(String email) {
         // --- OTP Logic ---
+        User user = userRepository.findByEmail (email).orElseThrow (() -> new UsernameNotFoundException ("User not found"));
+
         String otp = String.format ("%06d", new Random ().nextInt (999999));
         System.out.println (otp);
-        newUser.setOtp (otp);
+        user.setOtp (otp);
 
-        newUser.setOtpExpiry (LocalDateTime.now ().plusMinutes (5));
+        user.setOtpExpiry (LocalDateTime.now ().plusMinutes (5));
 
-        userRepository.save (newUser);
-        String subject = "Login OTP - Room Web App";
+        userRepository.save (user);
+        String subject = "Registration OTP - Room Web App";
 
-        String body = "Dear User,\n\n" +
-                "Your OTP for logging into Room Web App is: " + otp + "\n" +
+        String body = "Dear User,\n\n" + "Your OTP for logging into Room Web App is: " + otp + "\n" +
                 "This OTP is valid for 5 minutes only.\n\n" +
                 "If you didn't request this, please ignore this email.";
 
-        emailService.sendOtpEmail (req.getEmail (), subject, body);
-        return "OTP_SENT";
+        emailService.sendOtpEmail (email, subject, body);
+        return otp;
     }
 
     public String verifyAndActivate(String email, String otp) {
         User user = userRepository.findByEmail (email)
                 .orElseThrow (() -> new RuntimeException ("User not found"));
-
+        if (user.getRole ().equals ("ROLE_USER")) {
+            user.setIsVerifiedUser (true);
+            user.setStatus ("APPROVED");
+            user.setEnabled (true);
+        }
         if (user.getOtp () != null && user.getOtp ().equals (otp) && user.getOtpExpiry ().isAfter (LocalDateTime.now ())) {
             user.setEnabled (true);
             user.setOtp (null);
@@ -98,10 +106,9 @@ public class AuthService {
     }
 
     public JwtResponse loginUser(String email, String password) {
-        User user = userRepository.findByEmail (email)
-                .orElseThrow (() -> new RuntimeException ("User not found"));
+        User user = userRepository.findByEmail (email).orElseThrow (() -> new RuntimeException ("User not found"));
 
-        if (!user.isEnabled ()) {
+        if (!user.getEnabled ()) {
             throw new RuntimeException ("Account not verified. Please verify OTP first.");
         }
 

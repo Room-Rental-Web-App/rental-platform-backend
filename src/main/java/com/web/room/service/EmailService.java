@@ -23,7 +23,7 @@ public class EmailService {
 
     // --- EXISTING METHODS (No changes here) ---
 
-    public void sendOtpEmail(String to, String subject, String body) {
+    public String sendOtpEmail(String to, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom("roomdekhobharat@gmail.com");
@@ -32,6 +32,7 @@ public class EmailService {
             message.setText(body);
             mailSender.send(message);
             System.out.println("OTP Email sent successfully to: " + to);
+            return "OTP Sent";
         } catch (Exception e) {
             System.err.println("Failed to send email: " + e.getMessage());
             throw new RuntimeException("Email service is currently unavailable.");
