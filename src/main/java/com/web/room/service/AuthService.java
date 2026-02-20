@@ -7,6 +7,7 @@ import com.web.room.dto.Response.JwtResponse;
 import com.web.room.model.User;
 import com.web.room.repository.UserRepository;
 import com.web.room.security.JwtUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,17 +21,14 @@ import java.util.Optional;
 import java.util.Random;
 
 @Service
+@RequiredArgsConstructor
+
 public class AuthService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder encoder;
-    @Autowired
-    private EmailService emailService;
-    @Autowired
-    private JwtUtils jwtUtils;
-    @Autowired
-    private Cloudinary cloudinary;
+    final private UserRepository userRepository;
+    final private PasswordEncoder encoder;
+    final private EmailService emailService;
+    final private JwtUtils jwtUtils;
+    final private Cloudinary cloudinary;
 
     @Transactional
     public String registerRequest(RegistrationRequest req) {
@@ -43,12 +41,16 @@ public class AuthService {
         newUser.setPassword (encoder.encode (req.getPassword ()));
         newUser.setRole (req.getRole ());
         newUser.setPhone (req.getPhone ()); // Mobile number save kar rahe hain
-        newUser.setEnabled (false);
-
-
         // --- Logic for Cloudinary & Status ---
-        newUser.setStatus ("PENDING"); // Owner approval ke liye rukega
-        if (req.getAadharCard () != null && !req.getAadharCard ().isEmpty ()) {
+        if (req.getRole ().equals ("ROLE_USER")) {
+            newUser.setEnabled (true);
+            newUser.setIsVerifiedUser (true);
+            newUser.setStatus ("APPROVED"); // Owner approval ke liye rukega
+        }
+        if (req.getRole ().equals ("ROLE_OWNER") && req.getAadharCard () != null && !req.getAadharCard ().isEmpty ()) {  // if role == ROLE_OWNER
+            newUser.setEnabled (false);
+            newUser.setIsVerifiedUser (false);
+            newUser.setStatus ("PENDING"); // Owner approval ke liye rukega
             try {
                 // Uploading to Cloudinary
                 Map uploadResult = cloudinary.uploader ().upload (req.getAadharCard ().getBytes (),
@@ -59,8 +61,6 @@ public class AuthService {
             } catch (IOException e) {
                 throw new RuntimeException ("Image upload failed: " + e.getMessage ());
             }
-        } else {
-            throw new RuntimeException ("Aadhar Card photo is required for Owners!");
         }
 
 
@@ -101,7 +101,7 @@ public class AuthService {
         User user = userRepository.findByEmail (email)
                 .orElseThrow (() -> new RuntimeException ("User not found"));
 
-        if (!user.isEnabled ()) {
+        if (!user.getEnabled ()) {
             throw new RuntimeException ("Account not verified. Please verify OTP first.");
         }
 
