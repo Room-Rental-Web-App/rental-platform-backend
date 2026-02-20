@@ -9,7 +9,9 @@ import com.web.room.dto.Request.RegistrationRequest;
 import com.web.room.dto.Request.LoginRequest;
 import com.web.room.dto.Request.OtpRequest;
 import com.web.room.service.AuthService;
+import com.web.room.service.EmailService;
 import com.web.room.service.GoogleAuthService;
+import com.web.room.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,9 @@ public class AuthController {
 
     private final AuthService authService;
     private final GoogleAuthService googleAuthService;
+    private final EmailService emailService;
+    private final UserService userService;
+
     /**
      * Handles user registration with Multipart Data (Aadhar Card Image).
      * Consumes: multipart/form-data
@@ -48,6 +53,16 @@ public class AuthController {
     @PostMapping(value = "/google/complete-registration",consumes = {"multipart/form-data"})
     public JwtResponse completeRegistrationAndLogin(@ModelAttribute RegistrationRequest req) {
         return googleAuthService.completeRegistrationAndLogin(req);
+    }
+
+    @PostMapping("/send-otp/{email}")
+    public ResponseEntity<?> sendOTP(@PathVariable String email) {
+        try {
+            String otp = authService.sendOTP (email);
+            return ResponseEntity.ok (otp);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
     }
 
     @PostMapping("/verify-otp")
