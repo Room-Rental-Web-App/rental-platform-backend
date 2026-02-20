@@ -8,7 +8,6 @@ import com.web.room.model.User;
 import com.web.room.repository.UserRepository;
 import com.web.room.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -111,6 +110,10 @@ public class AuthService {
         if (!user.getEnabled ()) {
             throw new RuntimeException ("Account not verified. Please verify OTP first.");
         }
+        if (!encoder.matches (password, user.getPassword ())) {
+            throw new RuntimeException ("Invalid password");
+        }
+
 
         // Important Check: Agar status PENDING hai toh error message do
         if ("ROLE_OWNER".equals (user.getRole ()) && "PENDING".equals (user.getStatus ())) {
@@ -121,12 +124,10 @@ public class AuthService {
             throw new RuntimeException ("Your application was rejected by Admin. Please contact support.");
         }
 
-        if (encoder.matches (password, user.getPassword ())) {
-            String token = jwtUtils.generateToken (email, user.getRole ());
-            return new JwtResponse (token, user.getRole (), user.getEmail (), user.getId (), user.getFullName (), user.getPhone ());
-        } else {
-            throw new RuntimeException ("Invalid Credentials");
-        }
+
+        String token = jwtUtils.generateToken (email, user.getRole ());
+        return new JwtResponse (token, user.getRole (), user.getEmail (), user.getId (), user.getFullName (), user.getPhone ());
+
     }
 
     public ResponseEntity<?> forgotPasswordOtp(String email) {
