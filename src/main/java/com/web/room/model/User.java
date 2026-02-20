@@ -25,7 +25,9 @@ public class User {
 
     private String otp;
     private LocalDateTime otpExpiry;
-    private boolean enabled;
-    private boolean isVerifiedUser;
+    // block or not
+    private Boolean enabled;
+    // varified by owner or not
+    private Boolean isVerifiedUser;
     private String fullName;
 }
