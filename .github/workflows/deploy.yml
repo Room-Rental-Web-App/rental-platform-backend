@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Deploy to EC2
@@ -16,5 +17,11 @@ jobs:
           host: 13.235.94.37
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
+          port: 22
+          timeout: 30s
+          command_timeout: 5m
+          script_stop: true
           script: |
+            echo "Connected to EC2"
             bash /home/ubuntu/deploy/deploy.sh
+            echo "Deployment finished"
