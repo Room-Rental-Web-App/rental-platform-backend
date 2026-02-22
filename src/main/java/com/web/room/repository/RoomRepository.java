@@ -25,46 +25,46 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
 
     @Query("""
-SELECT r
-FROM Room r
-WHERE (:approved IS NULL OR r.approvedByAdmin = :approved)
-
-  AND r.latitude IS NOT NULL
-  AND r.longitude IS NOT NULL
-
-  /* Structured filters */
-  AND (:city IS NULL OR LOWER(r.city) = LOWER(:city))
-  AND (:pincode IS NULL OR r.pincode = :pincode)
-  AND (:roomType IS NULL OR r.roomType = :roomType)
-  AND (:minPrice IS NULL OR r.price >= :minPrice)
-  AND (:maxPrice IS NULL OR r.price <= :maxPrice)
-
-  /* Keyword search */
-  AND (
-      :keyword IS NULL OR
-      LOWER(r.city) LIKE LOWER(CONCAT('%', :keyword, '%'))
-      OR LOWER(r.address) LIKE LOWER(CONCAT('%', :keyword, '%'))
-      OR r.pincode LIKE CONCAT('%', :keyword, '%')
-      OR LOWER(r.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-      OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
-  )
-
-  /* Radius filter */
-  AND (
-      :userLat IS NULL OR (
-          6371 * 2 * ASIN(
-              SQRT(
-                  POWER(SIN(RADIANS(r.latitude - :userLat) / 2), 2)
-                  + COS(RADIANS(:userLat))
-                  * COS(RADIANS(r.latitude))
-                  * POWER(SIN(RADIANS(r.longitude - :userLng) / 2), 2)
+            SELECT r
+            FROM Room r
+            WHERE (:approved IS NULL OR r.approvedByAdmin = :approved)
+            
+              AND r.latitude IS NOT NULL
+              AND r.longitude IS NOT NULL
+            
+              /* Structured filters */
+              AND (:city IS NULL OR LOWER(r.city) = LOWER(:city))
+              AND (:pincode IS NULL OR r.pincode = :pincode)
+              AND (:roomType IS NULL OR r.roomType = :roomType)
+              AND (:minPrice IS NULL OR r.price >= :minPrice)
+              AND (:maxPrice IS NULL OR r.price <= :maxPrice)
+            
+              /* Keyword search */
+              AND (
+                  :keyword IS NULL OR
+                  LOWER(r.city) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(r.address) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR r.pincode LIKE CONCAT('%', :keyword, '%')
+                  OR LOWER(r.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(r.roomType) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+                  )
+              /* Radius filter */
+              AND (
+                  :userLat IS NULL OR (
+                      6371 * 2 * ASIN(
+                          SQRT(
+                              POWER(SIN(RADIANS(r.latitude - :userLat) / 2), 2)
+                              + COS(RADIANS(:userLat))
+                              * COS(RADIANS(r.latitude))
+                              * POWER(SIN(RADIANS(r.longitude - :userLng) / 2), 2)
+                          )
+                      )
+                  ) <= :radiusKm
               )
-          )
-      ) <= :radiusKm
-  )
-ORDER BY r.priorityScore DESC,
-         r.createdAt DESC
-""")
+            ORDER BY r.priorityScore DESC,
+                     r.createdAt DESC
+            """)
     Page<Room> searchAndFilterRooms(
             @Param ("approved") boolean approved,
             @Param("keyword") String keyword,
