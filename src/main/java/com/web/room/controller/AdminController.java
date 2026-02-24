@@ -81,6 +81,13 @@ AdminController {
         return ResponseEntity.ok("Owner request rejected");
     }
 
+    @PutMapping("/user-status/{id}")
+    public ResponseEntity<String> updateOwnerStatus
+            (@PathVariable Long id,@RequestParam String status) {
+        adminService.updateOwnerStatus(id, status);
+        return ResponseEntity.ok("Owner request " + status );
+    }
+
     // --- NEW: Room Approval Management ---
 
     /**
