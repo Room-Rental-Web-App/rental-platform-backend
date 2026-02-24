@@ -108,5 +108,15 @@ public class AuthController {
         );
     }
 
-
+    @PostMapping(value = "/upgrade-to-owner", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> upgradeToOwner(
+            @RequestParam("aadharCard") org.springframework.web.multipart.MultipartFile aadharCard,
+            @RequestParam("email") String email) {
+        try {
+            String res = authService.upgradeRequest(email, aadharCard);
+            return ResponseEntity.ok(java.util.Map.of("message", res));
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
 }

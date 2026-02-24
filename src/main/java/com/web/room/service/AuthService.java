@@ -231,4 +231,35 @@ public class AuthService {
         return ResponseEntity.ok("Password updated successfully");
     }
 
+    @Transactional
+    public String upgradeRequest(String email, org.springframework.web.multipart.MultipartFile aadharCard) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new org.springframework.security.core.userdetails.UsernameNotFoundException("User not found"));
+
+        if ("ROLE_OWNER".equals(user.getRole())) {
+            throw new RuntimeException("You are already an Owner!");
+        }
+
+        if (aadharCard != null && !aadharCard.isEmpty()) {
+            try {
+                // Cloudinary upload logic
+                java.util.Map uploadResult = cloudinary.uploader().upload(aadharCard.getBytes(),
+                        com.cloudinary.utils.ObjectUtils.asMap("folder", "aadhar_cards"));
+
+                String secureUrl = (String) uploadResult.get("secure_url");
+                user.setAadharUrl(secureUrl);
+
+                // Important: Role change but status PENDING for Admin
+                user.setStatus("PENDING");
+                user.setRole("ROLE_OWNER");
+
+                userRepository.save(user);
+                return "Upgrade request submitted. Please wait for Admin approval.";
+            } catch (java.io.IOException e) {
+                throw new RuntimeException("Image upload failed: " + e.getMessage());
+            }
+        } else {
+            throw new RuntimeException("Aadhar Card is required for upgrade.");
+        }
+    }
 }
