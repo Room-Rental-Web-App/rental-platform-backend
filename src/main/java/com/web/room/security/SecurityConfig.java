@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfiguration()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/sitemap.xml").permitAll()
                         // 1. Auth Endpoints (Sabke liye open)
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/").permitAll()

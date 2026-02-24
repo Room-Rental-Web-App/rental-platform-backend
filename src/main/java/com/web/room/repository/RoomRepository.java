@@ -94,4 +94,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     long countByOwnerEmailAndSubscriptionIdIsNull(String email);
 
     long countByOwnerEmailAndSubscriptionId(String email, Long id);
+
+    @Query("SELECT DISTINCT LOWER(r.city) FROM Room r WHERE r.approvedByAdmin = true")
+    List<String> findDistinctApprovedCities();
 }
