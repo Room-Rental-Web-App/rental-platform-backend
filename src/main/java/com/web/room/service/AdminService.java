@@ -156,4 +156,14 @@ public class AdminService {
     }
 
 
+    public ResponseEntity<?> blockToggle(Long userId, Boolean enabled) {
+        User user = userRepository.findById (userId).orElseThrow (() -> new RuntimeException ("User not found with id: " + userId));
+
+        user.setEnabled (enabled);
+        userRepository.save (user);
+
+        String message = enabled ? "User with ID " + userId + " has been unblocked."
+                : "User with ID " + userId + " has been blocked.";
+        return ResponseEntity.ok (message);
+    }
 }

@@ -110,7 +110,10 @@ AdminController {
     public ResponseEntity<String> rejectRoom(@PathVariable Long id) {
         return adminService.updateRoomApprovalStatus(id, false);
     }
-
+    @PatchMapping("/block/{userId}")
+    public ResponseEntity<?> blockToggle(@PathVariable Long userId, @RequestParam Boolean enabled){
+        return adminService.blockToggle(userId, enabled);
+    }
     @DeleteMapping("/rooms/{id}")
     public ResponseEntity<String> deleteRoom(@PathVariable Long id) {
         adminService.deleteRoomById(id); // We need to add this in AdminService
