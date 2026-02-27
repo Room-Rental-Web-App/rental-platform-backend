@@ -33,11 +33,11 @@ public class PaymentService {
     private final InvoiceService invoiceService; // Inject Invoice Service
 
     private static final Map<Integer, Integer> OWNER_PLANS = Map.of(
-            99, 7, 199, 30, 999, 180, 1499, 365
+            1, 7, 49, 30, 149, 180, 999, 365
     );
 
     private static final Map<Integer, Integer> USER_PLANS = Map.of(
-            69, 30, 299, 180, 499, 365
+            1, 30, 29, 180, 199, 365
     );
 
     public ResponseEntity<?> createOrder(Map<String, String> request) {
