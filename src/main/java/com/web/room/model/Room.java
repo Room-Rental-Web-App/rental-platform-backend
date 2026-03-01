@@ -64,12 +64,15 @@ public class Room {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    private LocalDateTime updatedAt;
+
     // ADDED FIELD: This was missing and causing the error
     private String statusUpdatedBy;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
         if (this.available == null) this.available = true;
         if (this.approvedByAdmin == null) this.approvedByAdmin = false;
         if (this.contactViewCount == null) this.contactViewCount = 0;

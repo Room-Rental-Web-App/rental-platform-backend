@@ -151,6 +151,7 @@ public class RoomService {
         existingRoom.setCity(updatedDetails.getCity());
         existingRoom.setContactNumber(updatedDetails.getContactNumber());
         existingRoom.setRoomType(updatedDetails.getRoomType());
+        existingRoom.setUpdatedAt (LocalDateTime.now());
 
         if (updatedDetails.getAvailable() != null) {
             existingRoom.setAvailable(updatedDetails.getAvailable());
@@ -204,6 +205,7 @@ public class RoomService {
         if (currentCount == null) currentCount = 0;
 
         room.setContactViewCount(currentCount + 1);
+        room.setUpdatedAt (LocalDateTime.now ());
 
         if (room.getContactViewCount() >= 5) {
             room.setPriorityScore(100);
@@ -217,6 +219,7 @@ public class RoomService {
         Room room = roomRepository.findById (id).orElseThrow (() -> new RuntimeException ("Room not found"));
         room.setAvailable (newStatus);
         Room updatedRoom = roomRepository.save (room);
+        updatedRoom.setUpdatedAt (LocalDateTime.now ());
 
         if (newStatus){
             emailService.notifyWaitingUsers(room);

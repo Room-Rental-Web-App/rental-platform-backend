@@ -79,8 +79,12 @@ public class SiteMapController {
 
             String lastModified = today;
 
-            if (room.getCreatedAt () != null) {
-                lastModified = room.getCreatedAt ()
+            if (room.getUpdatedAt() != null) {
+                lastModified = room.getUpdatedAt()
+                        .toLocalDate()
+                        .toString();
+            } else if (room.getCreatedAt() != null) {
+                lastModified = room.getCreatedAt()
                         .toLocalDate()
                         .toString();
             }
@@ -100,7 +104,7 @@ public class SiteMapController {
                 .body(xml.toString());
     }
 
-    // ================= HELPER METHOD =================
+    // ================= SAFE HELPER METHOD =================
     private void appendUrl(StringBuilder xml,
                            String url,
                            String lastMod,
@@ -108,10 +112,19 @@ public class SiteMapController {
                            String priority) {
 
         xml.append("<url>")
-                .append("<loc>").append(url).append("</loc>")
+                .append("<loc>").append(escapeXml(url)).append("</loc>")
                 .append("<lastmod>").append(lastMod).append("</lastmod>")
                 .append("<changefreq>").append(changeFreq).append("</changefreq>")
                 .append("<priority>").append(priority).append("</priority>")
                 .append("</url>");
+    }
+
+    // ================= XML ESCAPE METHOD =================
+    private String escapeXml(String value) {
+        return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
     }
 }
