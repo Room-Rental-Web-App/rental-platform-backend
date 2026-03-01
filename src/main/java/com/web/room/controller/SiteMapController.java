@@ -127,4 +127,18 @@ public class SiteMapController {
                 .replace("\"", "&quot;")
                 .replace("'", "&apos;");
     }
+
+
+    @GetMapping(value = "/robots.txt", produces = "text/plain")
+    public ResponseEntity<String> robots() {
+        String robots = """
+        User-agent: *
+        Allow: /
+        Sitemap: https://api.roomsdekho.in/sitemap.xml
+        """;
+
+        return ResponseEntity.ok()
+                .header("Content-Type", "text/plain")
+                .body(robots);
+    }
 }
