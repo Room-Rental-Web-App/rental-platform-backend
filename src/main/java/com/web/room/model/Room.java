@@ -1,5 +1,6 @@
 package com.web.room.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -93,4 +94,10 @@ public class Room {
 
     @Column(nullable = false)
     private Integer contactViewCount = 0;
+    @JsonIgnore
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoomAvailabilityRequest> availabilityRequests;
+    @JsonIgnore
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Wishlist> wishlistedBy;
 }

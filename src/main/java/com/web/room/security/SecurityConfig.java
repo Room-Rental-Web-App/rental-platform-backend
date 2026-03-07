@@ -49,7 +49,7 @@ public class SecurityConfig {
 
                         // 3. Room Endpoints - Owner Only (apiConfig ke ADD_ROOM, UPDATE_ROOM, MY_LISTINGS etc.)
                         .requestMatchers("/api/rooms/add", "/api/rooms/my-listings").hasRole("OWNER")
-                        .requestMatchers("/api/rooms/update/**", "/api/rooms/update-status/**", "/api/rooms/delete/**").hasRole("OWNER")
+                        .requestMatchers("/api/rooms/update/**", "/api/rooms/update-status/**", "/api/rooms/delete/**").hasAnyRole("OWNER" ,"ADMIN")
 
                         // 4. Admin Endpoints (apiConfig ke ADMIN_ALL_USERS, APPROVE_OWNER, etc.)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
