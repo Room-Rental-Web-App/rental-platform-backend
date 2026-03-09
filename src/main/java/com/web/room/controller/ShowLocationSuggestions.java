@@ -1,31 +1,35 @@
 package com.web.room.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriUtils;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+
 @RestController
 @RequestMapping("/api/location")
 public class ShowLocationSuggestions {
+    @Value("${geoapify.api.key}")
+    private String apiKey;
 
     @GetMapping("/search")
     public ResponseEntity<String> search(@RequestParam String query) {
         System.out.println (query);
         RestTemplate restTemplate = new RestTemplate();
+        String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("User-Agent", "RoomsDekho");
+        String url = "https://api.geoapify.com/v1/geocode/autocomplete"
+                + "?text=" + encodedQuery
+                + "&limit=5"
+                + "&filter=countrycode:in"
+                + "&bias=proximity:77.4126,23.2599"
+                + "&apiKey=" + apiKey;
 
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        String url = "https://nominatim.openstreetmap.org/search?format=json&q="
-                + UriUtils.encode(query, StandardCharsets.UTF_8)
-                + "&limit=10";
-
-        return restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        String result =  restTemplate.getForObject(url,String.class);
+        return ResponseEntity.ok (result);
     }
 }
+
