@@ -25,7 +25,6 @@ public class ShowLocationSuggestions {
                 + "?text=" + encodedQuery
                 + "&limit=5"
                 + "&filter=countrycode:in"
-                + "&bias=proximity:77.4126,23.2599"
                 + "&apiKey=" + apiKey;
 
         String result =  restTemplate.getForObject(url,String.class);
