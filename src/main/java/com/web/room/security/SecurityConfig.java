@@ -81,7 +81,16 @@ public class SecurityConfig {
                 "http://localhost:3000" // Testing ke liye localhost bhi rakhein
         ));
 
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "X-Requested-With",
+                "Cache-Control",
+                "Origin",
+                "x-client-id",
+                "x-client-secret"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
         source.registerCorsConfiguration("/**", config);
