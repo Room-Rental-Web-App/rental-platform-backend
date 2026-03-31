@@ -16,7 +16,7 @@ AdminController {
     @Autowired
     private AdminService adminService;
 
-    // --- User & Owner Management ---
+
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers(@RequestParam(required = false) String email) {
