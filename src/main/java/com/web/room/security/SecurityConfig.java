@@ -69,13 +69,22 @@ public class SecurityConfig {
     }
     @Bean
     public CorsConfigurationSource corsConfiguration() {
-        UrlBasedCorsConfigurationSource url = new UrlBasedCorsConfigurationSource ();
-        CorsConfiguration cors = new CorsConfiguration ();
-        cors.setAllowCredentials (true);
-        cors.addAllowedOriginPattern("*");
-        cors.setAllowedHeaders (List.of ("*"));
-        cors.setAllowedMethods (List.of ("*"));
-        url.registerCorsConfiguration ("/**", cors);
-        return url;
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowCredentials(true); // Iska matlab hum Auth headers allow kar rahe hain
+
+        // YAHAN BADLAV HAI: "*" ki jagah apne domains likhein
+        config.setAllowedOrigins(List.of(
+                "https://www.roomsdekho.in",
+                "https://roomsdekho.in",
+                "http://localhost:3000" // Testing ke liye localhost bhi rakhein
+        ));
+
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }
