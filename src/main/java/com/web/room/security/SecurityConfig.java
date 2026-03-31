@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/sitemap.xml","/robots.txt").permitAll()
                         // 1. Auth Endpoints (Sabke liye open)
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/payment/**").permitAll()
                         .requestMatchers("/").permitAll()
 
                         // 2. Room Endpoints - Public Access (Search, Featured, etc.)
@@ -78,6 +79,7 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "https://www.roomsdekho.in",
                 "https://roomsdekho.in",
+                "http://localhost:5173",
                 "http://localhost:3000" // Testing ke liye localhost bhi rakhein
         ));
 
