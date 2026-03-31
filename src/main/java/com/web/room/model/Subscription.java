@@ -16,31 +16,31 @@ public class Subscription {
     private Long id;
 
     @Column(nullable = false)
-    private String email;        // owner OR user email
+    private String email;        // Owner or User email
 
     @Column(nullable = false)
     private String role;         // ROLE_OWNER / ROLE_USER
 
     @Column(nullable = false)
-    private String planCode;     // USER_PLAN, OWNER_PLAN, OWNER_FEATURED
+    private String planCode;     // e.g., ROLE_OWNER_30D
 
-    // NEW: Transaction details to fix the DB error
     @Column(name = "amount_paid", nullable = false)
     private Double amountPaid = 0.0;
 
-    private String razorpayPaymentId;
-    private String razorpayOrderId;
+    // Renamed to be more generic or Cashfree specific
+    private String cashfreeOrderId;
+
+    // Optional: Keep a reference to the specific payment ID if needed
+    private String cashfreePaymentId;
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 
+    @Column(nullable = false)
     private boolean active;
 
-    // Custom getter for boolean (Lombok sometimes handles it differently)
+    // Custom getter for boolean (Good practice for some JSON serializers)
     public boolean getActive(){
         return this.active;
     }
-
-
-
 }
