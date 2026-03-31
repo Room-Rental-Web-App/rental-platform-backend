@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/rooms")
-@CrossOrigin(origins = "https://www.roomsdekho.in")
+//@CrossOrigin(origins = "https://www.roomsdekho.in")
 public class RoomController {
 
     @Autowired
